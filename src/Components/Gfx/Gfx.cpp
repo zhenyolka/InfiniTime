@@ -183,4 +183,12 @@ void Gfx::WaitTransfertFinished() const {
   ulTaskNotifyTake(pdTRUE, 500);
 }
 
+void Gfx::SetScrollArea(uint16_t topFixedLines, uint16_t scrollLines, uint16_t bottomFixedLines) {
+  lcd.VerticalScrollDefinition(topFixedLines, scrollLines, bottomFixedLines);
+}
+
+void Gfx::SetScrollStartLine(uint16_t line) {
+  lcd.VerticalScrollStartAddress(line);
+}
+
 

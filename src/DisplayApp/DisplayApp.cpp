@@ -68,7 +68,7 @@ void DisplayApp::Refresh() {
       break;
     case States::Running:
       RunningState();
-      queueTimeout = 1000;
+      queueTimeout = 1;
       break;
   }
 

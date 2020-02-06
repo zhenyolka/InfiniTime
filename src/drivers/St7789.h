@@ -11,6 +11,10 @@ namespace Pinetime {
         void Uninit();
         void DrawPixel(uint16_t x, uint16_t y, uint32_t color);
 
+        void VerticalScrollDefinition(uint16_t topFixedLines, uint16_t scrollLines, uint16_t bottomFixedLines);
+        void VerticalScrollStartAddress(uint16_t line);
+
+
         void BeginDrawBuffer(uint16_t x, uint16_t y, uint16_t width, uint16_t height);
         void NextDrawBuffer(const uint8_t* data, size_t size);
 
@@ -47,7 +51,9 @@ namespace Pinetime {
           ColumnAddressSet = 0x2a,
           RowAddressSet = 0x2b,
           WriteToRam = 0x2c,
-          MemoryDataAccessControl = 036,
+          MemoryDataAccessControl = 0x36,
+          VerticalScrollDefinition = 0x33,
+          VerticalScrollStartAddress = 0x37,
           ColMod = 0x3a,
         };
         void WriteData(uint8_t data);

@@ -5,7 +5,7 @@
 #include "Clock.h"
 
 using namespace Pinetime::Applications::Screens;
-
+uint16_t line = 0;
 void Clock::Refresh(bool fullRefresh) {
   if(fullRefresh) {
     gfx.FillRectangle(0,0,240,240,0x0000);
@@ -14,8 +14,14 @@ void Clock::Refresh(bool fullRefresh) {
     currentChar[2] = 3;
     currentChar[3] = 4;
     auto dummy = currentDateTime.Get();
+
+    gfx.SetScrollArea(74, 78, 320-(78+74));
+    line = 74;
   }
 
+  gfx.SetScrollStartLine(line);
+  line++;
+  if(line == 78+74) line = 74;
   if (fullRefresh || batteryPercentRemaining.IsUpdated()) {
     char batteryChar[11];
     auto newBatteryValue = batteryPercentRemaining.Get();
