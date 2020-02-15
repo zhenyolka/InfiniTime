@@ -14,6 +14,7 @@
 #include <date/date.h>
 #include <DisplayApp/Screens/Clock.h>
 #include <DisplayApp/Screens/Message.h>
+#include <DisplayApp/Screens/Rainbow.h>
 
 extern const FONT_INFO lCD_70ptFontInfo;
 
@@ -58,6 +59,7 @@ namespace Pinetime {
         void OnTouchEvent();
 
         Screens::Clock clockScreen;
+        Screens::Rainbow rainbowScreen;
         Screens::Screen* currentScreen = nullptr;
         static constexpr uint8_t pinLcdBacklight1 = 14;
         static constexpr uint8_t pinLcdBacklight2 = 22;

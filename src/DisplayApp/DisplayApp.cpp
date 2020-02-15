@@ -26,9 +26,10 @@ DisplayApp::DisplayApp(Pinetime::Drivers::St7789& lcd,
         batteryController{batteryController},
         bleController{bleController},
         dateTimeController{dateTimeController},
-        clockScreen{gfx} {
+        clockScreen{gfx},
+        rainbowScreen{gfx} {
   msgQueue = xQueueCreate(queueSize, itemSize);
-  currentScreen = &clockScreen;
+  currentScreen = &rainbowScreen;
 }
 
 void DisplayApp::Start() {
@@ -68,7 +69,7 @@ void DisplayApp::Refresh() {
       break;
     case States::Running:
       RunningState();
-      queueTimeout = 1;
+      queueTimeout = 50;
       break;
   }
 
@@ -139,7 +140,12 @@ void DisplayApp::OnTouchEvent() {
   auto info = touchPanel.GetTouchInfo();
 
   if(info.isTouch) {
-    gfx.FillRectangle(info.x-10, info.y-10, 20,20, pointColor);
-    pointColor+=10;
+    if(currentScreen == &clockScreen)
+      currentScreen = &rainbowScreen;
+    else {
+      gfx.SetScrollStartLine(0);
+      currentScreen = &clockScreen;
+    }
+    currentScreen->Refresh(true);
   }
 }

@@ -36,6 +36,7 @@ list(APPEND SOURCE_FILES
   DisplayApp/Screens/Screen.cpp
   DisplayApp/Screens/Clock.cpp
   DisplayApp/Screens/Message.cpp
+  DisplayApp/Screens/Rainbow.cpp
   main.cpp
   drivers/St7789.cpp
   drivers/SpiMaster.cpp
@@ -60,6 +61,7 @@ set(INCLUDE_FILES
   DisplayApp/Screens/Screen.h
   DisplayApp/Screens/Clock.h
   DisplayApp/Screens/Message.h
+  DisplayApp/Screens/Rainbow.h
   drivers/St7789.h
   drivers/SpiMaster.h
   Components/Gfx/Gfx.h
