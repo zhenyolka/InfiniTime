@@ -101,9 +101,15 @@ extern "C" {
   }
 }
 
+TickType_t previousTickCount = 0;
 void DebounceTimerCallback(TimerHandle_t xTimer) {
   xTimerStop(xTimer, 0);
-  systemTask->OnButtonPushed();
+
+  auto currentTickCount = xTaskGetTickCountFromISR();
+  if(currentTickCount - previousTickCount > 500) {
+    systemTask->OnButtonPushed();
+    previousTickCount = currentTickCount;
+  }
 }
 
 void SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0_IRQHandler(void) {

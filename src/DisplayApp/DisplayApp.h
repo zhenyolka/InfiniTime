@@ -62,7 +62,7 @@ namespace Pinetime {
         void IdleState();
         QueueHandle_t msgQueue;
 
-        static constexpr uint8_t queueSize = 10;
+        static constexpr uint8_t queueSize = 1;
         static constexpr uint8_t itemSize = 1;
 
         Pinetime::Controllers::Battery &batteryController;

@@ -226,18 +226,19 @@ bool SpiMaster::Read(uint8_t pinCsn, uint8_t* cmd, size_t cmdSize, uint8_t *data
 
 
 void SpiMaster::Sleep() {
+  /*
   while(spiBaseAddress->ENABLE != 0) {
     spiBaseAddress->ENABLE = (SPIM_ENABLE_ENABLE_Disabled << SPIM_ENABLE_ENABLE_Pos);
   }
   nrf_gpio_cfg_default(params.pinSCK);
   nrf_gpio_cfg_default(params.pinMOSI);
   nrf_gpio_cfg_default(params.pinMISO);
-
+*/
   NRF_LOG_INFO("[SPIMASTER] sleep")
 }
 
 void SpiMaster::Wakeup() {
-  Init();
+  //Init();
   NRF_LOG_INFO("[SPIMASTER] Wakeup");
 }
 
