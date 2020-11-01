@@ -1,7 +1,7 @@
 #include <libraries/log/nrf_log.h>
 #include <libraries/gpiote/app_gpiote.h>
 #include <drivers/Cst816s.h>
-#include "displayapp/LittleVgl.h"
+#include "displayapp/DummyLittleVgl.h"
 #include <hal/nrf_rtc.h>
 #include "components/ble/NotificationManager.h"
 #include <host/ble_gatt.h>
@@ -33,7 +33,7 @@ SystemTask::SystemTask(Drivers::SpiMaster &spi, Drivers::St7789 &lcd,
                        Controllers::DateTime &dateTimeController,
                        Pinetime::Controllers::NotificationManager& notificationManager) :
                        spi{spi}, lcd{lcd}, spiNorFlash{spiNorFlash},
-                       twiMaster{twiMaster}, touchPanel{touchPanel}, lvgl{lvgl}, batteryController{batteryController},
+                       twiMaster{twiMaster}, touchPanel{touchPanel}, lvgl{lvgl}, batteryController{batteryController}, gfx{lcd},
                        bleController{bleController}, dateTimeController{dateTimeController},
                        watchdog{}, watchdogView{watchdog}, notificationManager{notificationManager},
                        nimbleController(*this, bleController,dateTimeController, notificationManager, batteryController, spiNorFlash) {
@@ -62,18 +62,23 @@ void SystemTask::Work() {
   spiNorFlash.Wakeup();
   nimbleController.Init();
   nimbleController.StartAdvertising();
-  lcd.Init();
+  brightnessController.Init();
 
+  lcd.Init();
+  lcd.VerticalScrollDefinition(0, 240, 0);
+
+  lcd.VerticalScrollStartAddress(0);
+  gfx.Init();
   twiMaster.Init();
   touchPanel.Init();
   batteryController.Init();
 
-  displayApp.reset(new Pinetime::Applications::DisplayApp(lcd, lvgl, touchPanel, batteryController, bleController,
-                                                          dateTimeController, watchdogView, *this, notificationManager));
-  displayApp->Start();
+//  displayApp.reset(new Pinetime::Applications::DisplayApp(lcd, lvgl, touchPanel, batteryController, bleController,
+//                                                          dateTimeController, watchdogView, *this, notificationManager));
+//  displayApp->Start();
 
   batteryController.Update();
-  displayApp->PushMessage(Pinetime::Applications::DisplayApp::Messages::UpdateBatteryLevel);
+//  displayApp->PushMessage(Pinetime::Applications::DisplayApp::Messages::UpdateBatteryLevel);
 
   nrf_gpio_cfg_sense_input(pinButton, (nrf_gpio_pin_pull_t)GPIO_PIN_CNF_PULL_Pulldown, (nrf_gpio_pin_sense_t)GPIO_PIN_CNF_SENSE_High);
   nrf_gpio_cfg_output(15);
@@ -117,8 +122,8 @@ void SystemTask::Work() {
           lcd.Wakeup();
           touchPanel.Wakeup();
 
-          displayApp->PushMessage(Applications::DisplayApp::Messages::GoToRunning);
-          displayApp->PushMessage(Applications::DisplayApp::Messages::UpdateBatteryLevel);
+//          displayApp->PushMessage(Applications::DisplayApp::Messages::GoToRunning);
+//          displayApp->PushMessage(Applications::DisplayApp::Messages::UpdateBatteryLevel);
 
           xTimerStart(idleTimer, 0);
           nimbleController.StartAdvertising();
@@ -129,15 +134,15 @@ void SystemTask::Work() {
           isGoingToSleep = true;
           NRF_LOG_INFO("[systemtask] Going to sleep");
           xTimerStop(idleTimer, 0);
-          displayApp->PushMessage(Pinetime::Applications::DisplayApp::Messages::GoToSleep);
+//          displayApp->PushMessage(Pinetime::Applications::DisplayApp::Messages::GoToSleep);
           break;
         case Messages::OnNewTime:
           ReloadIdleTimer();
-          displayApp->PushMessage(Pinetime::Applications::DisplayApp::Messages::UpdateDateTime);
+//          displayApp->PushMessage(Pinetime::Applications::DisplayApp::Messages::UpdateDateTime);
           break;
         case Messages::OnNewNotification:
           if(isSleeping && !isWakingUp) GoToRunning();
-          displayApp->PushMessage(Pinetime::Applications::DisplayApp::Messages::NewNotification);
+//          displayApp->PushMessage(Pinetime::Applications::DisplayApp::Messages::NewNotification);
           break;
         case Messages::BleConnected:
           ReloadIdleTimer();
@@ -147,7 +152,7 @@ void SystemTask::Work() {
         case Messages::BleFirmwareUpdateStarted:
           doNotGoToSleep = true;
           if(isSleeping && !isWakingUp) GoToRunning();
-          displayApp->PushMessage(Pinetime::Applications::DisplayApp::Messages::BleFirmwareUpdateStarted);
+//          displayApp->PushMessage(Pinetime::Applications::DisplayApp::Messages::BleFirmwareUpdateStarted);
           break;
         case Messages::BleFirmwareUpdateFinished:
           doNotGoToSleep = false;
@@ -195,6 +200,25 @@ void SystemTask::Work() {
     batteryController.Update();
 
     monitor.Process();
+    static bool hello = false;
+
+
+    if(hello) {
+      for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 10; j++) {
+          lcd.DrawPixel(j, i, 0xffff);
+        }
+      }
+    }
+    else {
+      for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 10; j++) {
+          lcd.DrawPixel(j, i, 0x0);
+        }
+      }
+    }
+
+    hello = !hello;
 
     if(!nrf_gpio_pin_read(pinButton))
       watchdog.Kick();
@@ -208,7 +232,7 @@ void SystemTask::OnButtonPushed() {
   if(!isSleeping) {
     NRF_LOG_INFO("[systemtask] Button pushed");
     PushMessage(Messages::OnButtonEvent);
-    displayApp->PushMessage(Pinetime::Applications::DisplayApp::Messages::ButtonPushed);
+//    displayApp->PushMessage(Pinetime::Applications::DisplayApp::Messages::ButtonPushed);
   }
   else {
     if(!isWakingUp) {
@@ -228,7 +252,7 @@ void SystemTask::OnTouchEvent() {
   NRF_LOG_INFO("[systemtask] Touch event");
   if(!isSleeping) {
     PushMessage(Messages::OnTouchEvent);
-    displayApp->PushMessage(Pinetime::Applications::DisplayApp::Messages::TouchEvent);
+//    displayApp->PushMessage(Pinetime::Applications::DisplayApp::Messages::TouchEvent);
   }
 }
 

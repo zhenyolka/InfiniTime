@@ -13,7 +13,7 @@
 #include "components/ble/NotificationManager.h"
 #include "components/firmwarevalidator/FirmwareValidator.h"
 #include "drivers/Cst816s.h"
-#include "LittleVgl.h"
+#include "DummyLittleVgl.h"
 #include <date/date.h>
 #include "displayapp/screens/Clock.h"
 #include "displayapp/screens/Modal.h"

@@ -51,7 +51,8 @@ namespace Pinetime {
         Pinetime::Drivers::Cst816S& touchPanel;
         Pinetime::Components::LittleVgl& lvgl;
         Pinetime::Controllers::Battery& batteryController;
-        std::unique_ptr<Pinetime::Applications::DisplayApp> displayApp;
+        //std::unique_ptr<Pinetime::Applications::DisplayApp> displayApp;
+        Pinetime::Components::Gfx gfx;
         Pinetime::Controllers::Ble& bleController;
         Pinetime::Controllers::DateTime& dateTimeController;
         QueueHandle_t systemTasksMsgQueue;
@@ -62,6 +63,7 @@ namespace Pinetime {
         Pinetime::Drivers::WatchdogView watchdogView;
         Pinetime::Controllers::NotificationManager& notificationManager;
         Pinetime::Controllers::NimbleController nimbleController;
+        Controllers::BrightnessController brightnessController;
 
 
         static constexpr uint8_t pinSpiSck = 2;

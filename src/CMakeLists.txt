@@ -382,7 +382,9 @@ list(APPEND SOURCE_FILES
 
         systemtask/SystemTask.cpp
         drivers/TwiMaster.cpp
-        )
+    components/gfx/Gfx.cpp
+
+    )
 
 list(APPEND GRAPHICS_SOURCE_FILES
         # FreeRTOS

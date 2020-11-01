@@ -16,7 +16,7 @@
 #include <drivers/St7789.h>
 #include <drivers/SpiMaster.h>
 #include <drivers/Spi.h>
-#include "displayapp/LittleVgl.h"
+#include "displayapp/DummyLittleVgl.h"
 #include <systemtask/SystemTask.h>
 #include <nimble/nimble_port_freertos.h>
 #include <nimble/npl_freertos.h>
