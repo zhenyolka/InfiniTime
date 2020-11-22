@@ -387,22 +387,40 @@ list(APPEND SOURCE_FILES
     )
 
 list(APPEND GRAPHICS_SOURCE_FILES
-        # FreeRTOS
-        FreeRTOS/port.c
-        FreeRTOS/port_cmsis_systick.c
-        FreeRTOS/port_cmsis.c
+    # FreeRTOS
+    FreeRTOS/port.c
+    FreeRTOS/port_cmsis_systick.c
+    FreeRTOS/port_cmsis.c
 
-        drivers/SpiNorFlash.cpp
-        drivers/SpiMaster.cpp
-        drivers/Spi.cpp
-        logging/NrfLogger.cpp
+    drivers/SpiNorFlash.cpp
+    drivers/SpiMaster.cpp
+    drivers/Spi.cpp
+    logging/NrfLogger.cpp
 
-        components/gfx/Gfx.cpp
-        drivers/St7789.cpp
-        components/brightness/BrightnessController.cpp
+    components/gfx/Gfx.cpp
+    drivers/St7789.cpp
+    components/brightness/BrightnessController.cpp
 
-        graphics.cpp
-        )
+    graphics.cpp
+    )
+
+list(APPEND FACTORY_SOURCE_FILES
+    # FreeRTOS
+    FreeRTOS/port.c
+    FreeRTOS/port_cmsis_systick.c
+    FreeRTOS/port_cmsis.c
+
+    drivers/SpiNorFlash.cpp
+    drivers/SpiMaster.cpp
+    drivers/Spi.cpp
+    logging/NrfLogger.cpp
+
+    components/gfx/Gfx.cpp
+    drivers/St7789.cpp
+    components/brightness/BrightnessController.cpp
+
+    factory.cpp
+    )
 
 set(INCLUDE_FILES
         BootloaderVersion.h
@@ -706,6 +724,35 @@ add_custom_command(TARGET ${EXECUTABLE_GRAPHICS_NAME}
         COMMAND ${CMAKE_OBJCOPY} -O ihex ${EXECUTABLE_GRAPHICS_FILE_NAME}.out "${EXECUTABLE_GRAPHICS_FILE_NAME}.hex"
         COMMENT "post build steps for ${EXECUTABLE_GRAPHICS_FILE_NAME}"
         )
+
+# Build binary that writes the factory image
+set(EXECUTABLE_FACTORY_NAME "pinetime-factory")
+set(EXECUTABLE_FACTORY_FILE_NAME ${EXECUTABLE_FACTORY_NAME}-${pinetime_VERSION_MAJOR}.${pinetime_VERSION_MINOR}.${pinetime_VERSION_PATCH})
+add_executable(${EXECUTABLE_FACTORY_NAME} ${FACTORY_SOURCE_FILES})
+target_link_libraries(${EXECUTABLE_FACTORY_NAME} nrf-sdk)
+set_target_properties(${EXECUTABLE_FACTORY_NAME} PROPERTIES OUTPUT_NAME ${EXECUTABLE_FACTORY_FILE_NAME})
+target_compile_options(${EXECUTABLE_FACTORY_NAME} PUBLIC
+    $<$<AND:$<COMPILE_LANGUAGE:C>,$<CONFIG:DEBUG>>: ${COMMON_FLAGS} -O0 -g3>
+    $<$<AND:$<COMPILE_LANGUAGE:C>,$<CONFIG:RELEASE>>: ${COMMON_FLAGS} -O3>
+    $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CONFIG:DEBUG>>: ${COMMON_FLAGS} -O0 -g3>
+    $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CONFIG:RELEASE>>: ${COMMON_FLAGS} -O3>
+    $<$<COMPILE_LANGUAGE:ASM>: -MP -MD -std=c99 -x assembler-with-cpp>
+    )
+
+set_target_properties(${EXECUTABLE_FACTORY_NAME} PROPERTIES
+    SUFFIX ".out"
+    LINK_FLAGS "-mthumb -mabi=aapcs -std=gnu++98 -std=c99 -L ${NRF5_SDK_PATH}/modules/nrfx/mdk -T${NRF5_LINKER_SCRIPT} -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -Wl,--gc-sections --specs=nano.specs -lc -lnosys -lm -Wl,-Map=${EXECUTABLE_FACTORY_FILE_NAME}.map"
+    CXX_STANDARD 11
+    C_STANDARD 99
+    )
+
+add_custom_command(TARGET ${EXECUTABLE_FACTORY_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_SIZE_UTIL} ${EXECUTABLE_FACTORY_FILE_NAME}.out
+    COMMAND ${CMAKE_OBJCOPY} -O binary ${EXECUTABLE_FACTORY_FILE_NAME}.out "${EXECUTABLE_FACTORY_FILE_NAME}.bin"
+    COMMAND ${CMAKE_OBJCOPY} -O ihex ${EXECUTABLE_FACTORY_FILE_NAME}.out "${EXECUTABLE_FACTORY_FILE_NAME}.hex"
+    COMMENT "post build steps for ${EXECUTABLE_FACTORY_FILE_NAME}"
+    )
 
 # FLASH
 if (USE_JLINK)
