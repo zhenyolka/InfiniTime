@@ -7,12 +7,20 @@
 #include <drivers/SpiMaster.h>
 #include <drivers/St7789.h>
 #include "components/battery/BatteryController.h"
+#ifdef PINETIME_IS_FACTORY
+#include "displayapp/DisplayAppFactory.h"
+#include "displayapp/DummyLittleVgl.h"
+#else
 #include "displayapp/DisplayApp.h"
+#include "displayapp/LittleVgl.h"
+#endif
 #include <drivers/Watchdog.h>
 #include <drivers/SpiNorFlash.h>
 #include "SystemMonitor.h"
 #include "components/ble/NimbleController.h"
 #include "timers.h"
+
+
 
 namespace Pinetime {
   namespace System {
@@ -51,8 +59,7 @@ namespace Pinetime {
         Pinetime::Drivers::Cst816S& touchPanel;
         Pinetime::Components::LittleVgl& lvgl;
         Pinetime::Controllers::Battery& batteryController;
-        //std::unique_ptr<Pinetime::Applications::DisplayApp> displayApp;
-        Pinetime::Components::Gfx gfx;
+        std::unique_ptr<Pinetime::Applications::DisplayApp> displayApp;
         Pinetime::Controllers::Ble& bleController;
         Pinetime::Controllers::DateTime& dateTimeController;
         QueueHandle_t systemTasksMsgQueue;

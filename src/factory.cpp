@@ -13,7 +13,8 @@
 #include <components/gfx/Gfx.h>
 #include <drivers/St7789.h>
 #include <components/brightness/BrightnessController.h>
-#include "../factory/image.h"
+#include "factoryImage.h"
+
 
 #if NRF_LOG_ENABLED
 #include "logging/NrfLogger.h"
@@ -106,7 +107,7 @@ void Process(void* instance) {
 
   static constexpr uint32_t memoryChunkSize = 200;
   uint8_t writeBuffer[memoryChunkSize];
-  for(int offset = 0; offset < sizeof(factoryImage); offset+=memoryChunkSize) {
+  for(size_t offset = 0; offset < sizeof(factoryImage); offset+=memoryChunkSize) {
     std::memcpy(writeBuffer, &factoryImage[offset], memoryChunkSize);
     spiNorFlash.Write(offset, writeBuffer, memoryChunkSize);
   }

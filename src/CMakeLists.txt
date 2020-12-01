@@ -382,6 +382,45 @@ list(APPEND SOURCE_FILES
 
         systemtask/SystemTask.cpp
         drivers/TwiMaster.cpp
+    )
+
+list(APPEND FACTORY_SOURCE_FILES
+    BootloaderVersion.cpp
+    logging/NrfLogger.cpp
+    displayapp/DisplayAppFactory.cpp
+
+    main.cpp
+    drivers/St7789.cpp
+    drivers/SpiNorFlash.cpp
+    drivers/SpiMaster.cpp
+    drivers/Spi.cpp
+    drivers/Watchdog.cpp
+    drivers/DebugPins.cpp
+    drivers/InternalFlash.cpp
+    components/battery/BatteryController.cpp
+    components/ble/BleController.cpp
+    components/ble/NotificationManager.cpp
+    components/datetime/DateTimeController.cpp
+    components/brightness/BrightnessController.cpp
+    components/ble/NimbleController.cpp
+    components/ble/DeviceInformationService.cpp
+    components/ble/CurrentTimeClient.cpp
+    components/ble/AlertNotificationClient.cpp
+    components/ble/DfuService.cpp
+    components/ble/CurrentTimeService.cpp
+    components/ble/AlertNotificationService.cpp
+    components/ble/MusicService.cpp
+    components/ble/BatteryInformationService.cpp
+    components/ble/ImmediateAlertService.cpp
+    components/ble/ServiceDiscovery.cpp
+    components/firmwarevalidator/FirmwareValidator.cpp
+    drivers/Cst816s.cpp
+    FreeRTOS/port.c
+    FreeRTOS/port_cmsis_systick.c
+    FreeRTOS/port_cmsis.c
+
+    systemtask/SystemTask.cpp
+    drivers/TwiMaster.cpp
     components/gfx/Gfx.cpp
 
     )
@@ -404,7 +443,7 @@ list(APPEND GRAPHICS_SOURCE_FILES
     graphics.cpp
     )
 
-list(APPEND FACTORY_SOURCE_FILES
+list(APPEND FACTORYLOADER_SOURCE_FILES
     # FreeRTOS
     FreeRTOS/port.c
     FreeRTOS/port_cmsis_systick.c
@@ -427,6 +466,7 @@ set(INCLUDE_FILES
         logging/Logger.h
         logging/NrfLogger.h
         displayapp/DisplayApp.h
+        displayapp/Messages.h
         displayapp/TouchEvents.h
         displayapp/screens/Screen.h
         displayapp/screens/Clock.h
@@ -481,7 +521,7 @@ set(INCLUDE_FILES
         libs/date/includes/date/julian.h
         libs/date/includes/date/ptz.h
         libs/date/includes/date/tz_private.h
-        displayapp/LittleVgl.h
+        #displayapp/LittleVgl.h
         systemtask/SystemTask.h
         systemtask/SystemMonitor.h
         displayapp/screens/Symbols.h
@@ -725,12 +765,13 @@ add_custom_command(TARGET ${EXECUTABLE_GRAPHICS_NAME}
         COMMENT "post build steps for ${EXECUTABLE_GRAPHICS_FILE_NAME}"
         )
 
-# Build binary that writes the factory image
+# infinitime-light
 set(EXECUTABLE_FACTORY_NAME "pinetime-factory")
 set(EXECUTABLE_FACTORY_FILE_NAME ${EXECUTABLE_FACTORY_NAME}-${pinetime_VERSION_MAJOR}.${pinetime_VERSION_MINOR}.${pinetime_VERSION_PATCH})
 add_executable(${EXECUTABLE_FACTORY_NAME} ${FACTORY_SOURCE_FILES})
-target_link_libraries(${EXECUTABLE_FACTORY_NAME} nrf-sdk)
+target_link_libraries(${EXECUTABLE_FACTORY_NAME} nimble nrf-sdk)
 set_target_properties(${EXECUTABLE_FACTORY_NAME} PROPERTIES OUTPUT_NAME ${EXECUTABLE_FACTORY_FILE_NAME})
+target_compile_definitions(${EXECUTABLE_FACTORY_NAME} PUBLIC "PINETIME_IS_FACTORY")
 target_compile_options(${EXECUTABLE_FACTORY_NAME} PUBLIC
     $<$<AND:$<COMPILE_LANGUAGE:C>,$<CONFIG:DEBUG>>: ${COMMON_FLAGS} -O0 -g3>
     $<$<AND:$<COMPILE_LANGUAGE:C>,$<CONFIG:RELEASE>>: ${COMMON_FLAGS} -O3>
@@ -752,6 +793,71 @@ add_custom_command(TARGET ${EXECUTABLE_FACTORY_NAME}
     COMMAND ${CMAKE_OBJCOPY} -O binary ${EXECUTABLE_FACTORY_FILE_NAME}.out "${EXECUTABLE_FACTORY_FILE_NAME}.bin"
     COMMAND ${CMAKE_OBJCOPY} -O ihex ${EXECUTABLE_FACTORY_FILE_NAME}.out "${EXECUTABLE_FACTORY_FILE_NAME}.hex"
     COMMENT "post build steps for ${EXECUTABLE_FACTORY_FILE_NAME}"
+    )
+
+# infinitime-light MCUBOOT
+set(EXECUTABLE_FACTORY_MCUBOOT_NAME "pinetime-mcuboot-factory")
+set(EXECUTABLE_FACTORY_MCUBOOT_FILE_NAME ${EXECUTABLE_FACTORY_MCUBOOT_NAME}-${pinetime_VERSION_MAJOR}.${pinetime_VERSION_MINOR}.${pinetime_VERSION_PATCH})
+add_executable(${EXECUTABLE_FACTORY_MCUBOOT_NAME} ${FACTORY_SOURCE_FILES})
+target_link_libraries(${EXECUTABLE_FACTORY_MCUBOOT_NAME} nimble nrf-sdk)
+set_target_properties(${EXECUTABLE_FACTORY_MCUBOOT_NAME} PROPERTIES OUTPUT_NAME ${EXECUTABLE_FACTORY_MCUBOOT_FILE_NAME})
+target_compile_definitions(${EXECUTABLE_FACTORY_MCUBOOT_NAME} PUBLIC "PINETIME_IS_FACTORY")
+target_compile_options(${EXECUTABLE_FACTORY_MCUBOOT_NAME} PUBLIC
+    $<$<AND:$<COMPILE_LANGUAGE:C>,$<CONFIG:DEBUG>>: ${COMMON_FLAGS} -O0 -g3>
+    $<$<AND:$<COMPILE_LANGUAGE:C>,$<CONFIG:RELEASE>>: ${COMMON_FLAGS} -O3>
+    $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CONFIG:DEBUG>>: ${COMMON_FLAGS} -O0 -g3>
+    $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CONFIG:RELEASE>>: ${COMMON_FLAGS} -O3>
+    $<$<COMPILE_LANGUAGE:ASM>: -MP -MD -std=c99 -x assembler-with-cpp>
+    )
+
+set_target_properties(${EXECUTABLE_FACTORY_MCUBOOT_NAME} PROPERTIES
+    SUFFIX ".out"
+    LINK_FLAGS "-mthumb -mabi=aapcs -std=gnu++98 -std=c99 -L ${NRF5_SDK_PATH}/modules/nrfx/mdk -T${NRF5_LINKER_SCRIPT_MCUBOOT} -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -Wl,--gc-sections --specs=nano.specs -lc -lnosys -lm -Wl,-Map=${EXECUTABLE_FACTORY_MCUBOOT_FILE_NAME}.map"
+    CXX_STANDARD 11
+    C_STANDARD 99
+    )
+
+add_custom_command(TARGET ${EXECUTABLE_FACTORY_MCUBOOT_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_SIZE_UTIL} ${EXECUTABLE_FACTORY_MCUBOOT_FILE_NAME}.out
+    COMMAND ${CMAKE_OBJCOPY} -O binary ${EXECUTABLE_FACTORY_MCUBOOT_FILE_NAME}.out "${EXECUTABLE_FACTORY_MCUBOOT_FILE_NAME}.bin"
+    COMMAND ${CMAKE_OBJCOPY} -O ihex ${EXECUTABLE_FACTORY_MCUBOOT_FILE_NAME}.out "${EXECUTABLE_FACTORY_MCUBOOT_FILE_NAME}.hex"
+    COMMAND /home/jf/nrf52/mcuboot/scripts/imgtool.py create --align 4 --version 1.0.0 --header-size 32 --slot-size 475136 --pad-header ${EXECUTABLE_FACTORY_MCUBOOT_FILE_NAME}.bin factoryImage.bin
+    COMMAND python ${CMAKE_SOURCE_DIR}/tools/bin2c.py factoryImage.bin factoryImage > factoryImage.h
+    COMMENT "post build steps for ${EXECUTABLE_FACTORY_MCUBOOT_FILE_NAME}"
+    )
+
+# Build binary that writes the factory image
+set(EXECUTABLE_FACTORYLOADER_NAME "pinetime-factory-loader")
+set(EXECUTABLE_FACTORYLOADER_FILE_NAME ${EXECUTABLE_FACTORYLOADER_NAME}-${pinetime_VERSION_MAJOR}.${pinetime_VERSION_MINOR}.${pinetime_VERSION_PATCH})
+add_executable(${EXECUTABLE_FACTORYLOADER_NAME} ${FACTORYLOADER_SOURCE_FILES})
+target_link_libraries(${EXECUTABLE_FACTORYLOADER_NAME} nrf-sdk)
+set_target_properties(${EXECUTABLE_FACTORYLOADER_NAME} PROPERTIES OUTPUT_NAME ${EXECUTABLE_FACTORYLOADER_FILE_NAME})
+target_compile_options(${EXECUTABLE_FACTORYLOADER_NAME} PUBLIC
+    $<$<AND:$<COMPILE_LANGUAGE:C>,$<CONFIG:DEBUG>>: ${COMMON_FLAGS} -O0 -g3>
+    $<$<AND:$<COMPILE_LANGUAGE:C>,$<CONFIG:RELEASE>>: ${COMMON_FLAGS} -O3>
+    $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CONFIG:DEBUG>>: ${COMMON_FLAGS} -O0 -g3>
+    $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CONFIG:RELEASE>>: ${COMMON_FLAGS} -O3>
+    $<$<COMPILE_LANGUAGE:ASM>: -MP -MD -std=c99 -x assembler-with-cpp>
+    )
+target_include_directories(${EXECUTABLE_FACTORYLOADER_NAME} PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
+)
+add_dependencies(${EXECUTABLE_FACTORYLOADER_NAME} ${EXECUTABLE_FACTORY_MCUBOOT_NAME})
+
+set_target_properties(${EXECUTABLE_FACTORYLOADER_NAME} PROPERTIES
+    SUFFIX ".out"
+    LINK_FLAGS "-mthumb -mabi=aapcs -std=gnu++98 -std=c99 -L ${NRF5_SDK_PATH}/modules/nrfx/mdk -T${NRF5_LINKER_SCRIPT} -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -Wl,--gc-sections --specs=nano.specs -lc -lnosys -lm -Wl,-Map=${EXECUTABLE_FACTORYLOADER_FILE_NAME}.map"
+    CXX_STANDARD 11
+    C_STANDARD 99
+    )
+
+add_custom_command(TARGET ${EXECUTABLE_FACTORYLOADER_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_SIZE_UTIL} ${EXECUTABLE_FACTORYLOADER_FILE_NAME}.out
+    COMMAND ${CMAKE_OBJCOPY} -O binary ${EXECUTABLE_FACTORYLOADER_FILE_NAME}.out "${EXECUTABLE_FACTORYLOADER_FILE_NAME}.bin"
+    COMMAND ${CMAKE_OBJCOPY} -O ihex ${EXECUTABLE_FACTORYLOADER_FILE_NAME}.out "${EXECUTABLE_FACTORYLOADER_FILE_NAME}.hex"
+    COMMENT "post build steps for ${EXECUTABLE_FACTORYLOADER_FILE_NAME}"
     )
 
 # FLASH
