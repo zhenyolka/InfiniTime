@@ -422,6 +422,8 @@ list(APPEND FACTORY_SOURCE_FILES
     systemtask/SystemTask.cpp
     drivers/TwiMaster.cpp
     components/gfx/Gfx.cpp
+    displayapp/icons/infinitime/infinitime-nb.c
+    components/rle/RleDecoder.cpp
 
     )
 

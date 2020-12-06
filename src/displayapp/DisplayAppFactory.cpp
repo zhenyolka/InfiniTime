@@ -3,6 +3,8 @@
 #include <FreeRTOS.h>
 #include <task.h>
 #include <libraries/log/nrf_log.h>
+#include <components/rle/RleDecoder.h>
+#include "displayapp/icons/infinitime/infinitime-nb.c"
 
 using namespace Pinetime::Applications;
 
@@ -11,7 +13,7 @@ DisplayApp::DisplayApp(Drivers::St7789 &lcd, Components::LittleVgl &lvgl, Driver
                        Controllers::DateTime &dateTimeController, Drivers::WatchdogView &watchdog,
                        System::SystemTask &systemTask,
                        Pinetime::Controllers::NotificationManager& notificationManager) :
-        lcd{lcd} {
+        lcd{lcd}, bleController{bleController} {
   msgQueue = xQueueCreate(queueSize, itemSize);
 
 }
@@ -24,41 +26,76 @@ void DisplayApp::Start() {
 void DisplayApp::Process(void *instance) {
   auto *app = static_cast<DisplayApp *>(instance);
   NRF_LOG_INFO("displayapp task started!");
-  app->InitHw();
 
   // Send a dummy notification to unlock the lvgl display driver for the first iteration
   xTaskNotifyGive(xTaskGetCurrentTaskHandle());
 
+  app->InitHw();
   while (1) {
     app->Refresh();
   }
 }
 
 void DisplayApp::InitHw() {
-
+  DisplayLogo(colorWhite);
 }
 
 void DisplayApp::Refresh() {
-  static bool hello = false;
-
-
-  if(hello) {
-    for (int i = 0; i < 10; i++) {
-      for (int j = 0; j < 10; j++) {
-        lcd.DrawPixel(j, i, 0xF000);
-      }
+  Display::Messages msg;
+  if (xQueueReceive(msgQueue, &msg, 200)) {
+    switch (msg) {
+      case Display::Messages::UpdateBleConnection:
+        if (bleController.IsConnected())
+          DisplayLogo(colorBlue);
+        else
+          DisplayLogo(colorWhite);
+        break;
+      case Display::Messages::BleFirmwareUpdateStarted:
+        DisplayLogo(colorGreen);
+        break;
+      default:
+        break;
     }
   }
-  else {
-    for (int i = 0; i < 10; i++) {
-      for (int j = 0; j < 10; j++) {
-        lcd.DrawPixel(j, i, 0x0);
-      }
+
+  if (bleController.IsFirmwareUpdating()) {
+    uint8_t percent = (static_cast<float>(bleController.FirmwareUpdateCurrentBytes()) /
+                       static_cast<float>(bleController.FirmwareUpdateTotalBytes())) * 100.0f;
+    switch (bleController.State()) {
+      case Controllers::Ble::FirmwareUpdateStates::Running:
+        DisplayOtaProgress(percent, colorWhite);
+        break;
+      case Controllers::Ble::FirmwareUpdateStates::Validated:
+        DisplayOtaProgress(100, colorGreenSwapped);
+        break;
+      case Controllers::Ble::FirmwareUpdateStates::Error:
+        DisplayOtaProgress(100, colorRedSwapped);
+        break;
+      default:
+        break;
     }
   }
+}
 
-  hello = !hello;
-  vTaskDelay(200);
+void DisplayApp::DisplayLogo(uint16_t color) {
+  Pinetime::Tools::RleDecoder rleDecoder(infinitime_nb, sizeof(infinitime_nb), color, colorBlack);
+  for(int i = 0; i < displayWidth; i++) {
+    rleDecoder.DecodeNext(displayBuffer, displayWidth * bytesPerPixel);
+    ulTaskNotifyTake(pdTRUE, 500);
+    lcd.BeginDrawBuffer(0, i, displayWidth, 1);
+    lcd.NextDrawBuffer(reinterpret_cast<const uint8_t *>(displayBuffer), displayWidth * bytesPerPixel);
+  }
+}
+
+void DisplayApp::DisplayOtaProgress(uint8_t percent, uint16_t color) {
+  const uint8_t barHeight = 20;
+  std::fill(displayBuffer, displayBuffer+(displayWidth * bytesPerPixel), color);
+  for(int i = 0; i < barHeight; i++) {
+    ulTaskNotifyTake(pdTRUE, 500);
+    uint16_t barWidth = std::min(static_cast<float>(percent) * 2.4f, static_cast<float>(displayWidth));
+    lcd.BeginDrawBuffer(0, displayWidth - barHeight + i, barWidth, 1);
+    lcd.NextDrawBuffer(reinterpret_cast<const uint8_t *>(displayBuffer), barWidth * bytesPerPixel);
+  }
 }
 
 void DisplayApp::PushMessage(Display::Messages msg) {

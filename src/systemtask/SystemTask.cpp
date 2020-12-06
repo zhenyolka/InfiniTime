@@ -143,6 +143,7 @@ void SystemTask::Work() {
           ReloadIdleTimer();
           isBleDiscoveryTimerRunning = true;
           bleDiscoveryTimer = 5;
+          displayApp->PushMessage(Pinetime::Applications::Display::Messages::UpdateBleConnection);
           break;
         case Messages::BleFirmwareUpdateStarted:
           doNotGoToSleep = true;

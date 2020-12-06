@@ -13,6 +13,7 @@ namespace Pinetime {
     class RleDecoder {
       public:
         RleDecoder(const uint8_t* buffer, size_t size);
+        RleDecoder(const uint8_t* buffer, size_t size, uint16_t foregroundColor, uint16_t backgroundColor);
 
         void DecodeNext(uint8_t* output, size_t maxBytes);
 
@@ -23,8 +24,8 @@ namespace Pinetime {
         int encodedBufferIndex = 0;
         int y = 0;
         uint16_t bp = 0;
-        static constexpr uint16_t foregroundColor = 0xffff;
-        static constexpr uint16_t backgroundColor = 0;
+        uint16_t foregroundColor = 0xffff;
+        uint16_t backgroundColor = 0;
         uint16_t color = backgroundColor;
         int processedCount = 0;
     };
