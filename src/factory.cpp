@@ -15,6 +15,9 @@
 #include <components/brightness/BrightnessController.h>
 #include "factoryImage.h"
 
+#include "displayapp/icons/infinitime/infinitime-nb.c"
+#include "components/rle/RleDecoder.h"
+
 
 #if NRF_LOG_ENABLED
 #include "logging/NrfLogger.h"
@@ -30,6 +33,13 @@ static constexpr uint8_t pinSpiMiso = 4;
 static constexpr uint8_t pinSpiFlashCsn = 5;
 static constexpr uint8_t pinLcdCsn = 25;
 static constexpr uint8_t pinLcdDataCommand = 18;
+
+static constexpr uint8_t displayWidth = 240;
+static constexpr uint8_t displayHeight = 240;
+static constexpr uint8_t bytesPerPixel = 2;
+
+static constexpr uint16_t colorWhite = 0xFFFF;
+static constexpr uint16_t colorGreen = 0xE007;
 
 Pinetime::Drivers::SpiMaster spi{Pinetime::Drivers::SpiMaster::SpiModule::SPI0, {
         Pinetime::Drivers::SpiMaster::BitOrder::Msb_Lsb,
@@ -48,6 +58,10 @@ Pinetime::Drivers::St7789 lcd {lcdSpi, pinLcdDataCommand};
 
 Pinetime::Components::Gfx gfx{lcd};
 Pinetime::Controllers::BrightnessController brightnessController;
+
+void DisplayProgressBar(uint8_t percent, uint16_t color);
+
+void DisplayLogo();
 
 extern "C" {
 void vApplicationIdleHook(void) {
@@ -71,10 +85,8 @@ void SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0_IRQHandler(void) {
 }
 }
 
+uint8_t displayBuffer[displayWidth * bytesPerPixel];
 void Process(void* instance) {
-  // Wait before erasing the memory to let the time to the SWD debugger to flash a new firmware before running this one.
-  vTaskDelay(5000);
-
   APP_GPIOTE_INIT(2);
 
   NRF_LOG_INFO("Init...");
@@ -84,46 +96,49 @@ void Process(void* instance) {
   brightnessController.Init();
   lcd.Init();
   gfx.Init();
-  NRF_LOG_INFO("Init Done!")
 
-  for(int i = 0; i < 100; i++) {
-    for(int j = 0; j < 100; j++) {
-      gfx.pixel_draw(70+i, 70+j, 0x00AA);
-    }
-  }
+  NRF_LOG_INFO("Display logo")
+  DisplayLogo();
 
   NRF_LOG_INFO("Erasing...");
   for (uint32_t erased = 0; erased < sizeof(factoryImage); erased += 0x1000) {
     spiNorFlash.SectorErase(erased);
   }
-  NRF_LOG_INFO("Erase done!");
 
-  NRF_LOG_INFO("Writing graphic...");
-  for(int i = 0; i < 100; i++) {
-    for(int j = 0; j < 100; j++) {
-      gfx.pixel_draw(70+i, 70+j, 0xaa00);
-    }
-  }
-
+  NRF_LOG_INFO("Writing factory image...");
   static constexpr uint32_t memoryChunkSize = 200;
   uint8_t writeBuffer[memoryChunkSize];
   for(size_t offset = 0; offset < sizeof(factoryImage); offset+=memoryChunkSize) {
     std::memcpy(writeBuffer, &factoryImage[offset], memoryChunkSize);
     spiNorFlash.Write(offset, writeBuffer, memoryChunkSize);
+    DisplayProgressBar((static_cast<float>(offset) / static_cast<float>(sizeof(factoryImage))) * 100.0f, colorWhite);
   }
-  NRF_LOG_INFO("Writing graphic done!");
-
-  for(int i = 0; i < 100; i++) {
-    for(int j = 0; j < 100; j++) {
-      gfx.pixel_draw(70+i, 70+j, 0xffff);
-    }
-  }
-
-
-  NRF_LOG_INFO("Done!");
+  NRF_LOG_INFO("Writing factory image done!");
+  DisplayProgressBar(100.0f, colorGreen);
 
   while(1) {
     asm("nop" );
+  }
+}
+
+void DisplayLogo() {
+  Pinetime::Tools::RleDecoder rleDecoder(infinitime_nb, sizeof(infinitime_nb));
+  for(int i = 0; i < displayWidth; i++) {
+    rleDecoder.DecodeNext(displayBuffer, displayWidth * bytesPerPixel);
+    ulTaskNotifyTake(pdTRUE, 500);
+    lcd.BeginDrawBuffer(0, i, displayWidth, 1);
+    lcd.NextDrawBuffer(reinterpret_cast<const uint8_t *>(displayBuffer), displayWidth * bytesPerPixel);
+  }
+}
+
+void DisplayProgressBar(uint8_t percent, uint16_t color) {
+  static constexpr uint8_t barHeight = 20;
+  std::fill(displayBuffer, displayBuffer+(displayWidth * bytesPerPixel), color);
+  for(int i = 0; i < barHeight; i++) {
+    ulTaskNotifyTake(pdTRUE, 500);
+    uint16_t barWidth = std::min(static_cast<float>(percent) * 2.4f, static_cast<float>(displayWidth));
+    lcd.BeginDrawBuffer(0, displayWidth - barHeight + i, barWidth, 1);
+    lcd.NextDrawBuffer(reinterpret_cast<const uint8_t *>(displayBuffer), barWidth * bytesPerPixel);
   }
 }
 
