@@ -818,6 +818,41 @@ add_custom_command(TARGET ${EXECUTABLE_FACTORYLOADER_NAME}
     COMMENT "post build steps for ${EXECUTABLE_FACTORYLOADER_FILE_NAME}"
     )
 
+# Build binary that writes the factory image (MCUBoot version)
+set(EXECUTABLE_MCUBOOT_FACTORYLOADER_NAME "pinetime-mcuboot-factory-loader")
+set(EXECUTABLE_MCUBOOT_FACTORYLOADER_FILE_NAME ${EXECUTABLE_MCUBOOT_FACTORYLOADER_NAME}-${pinetime_VERSION_MAJOR}.${pinetime_VERSION_MINOR}.${pinetime_VERSION_PATCH})
+add_executable(${EXECUTABLE_MCUBOOT_FACTORYLOADER_NAME} ${FACTORYLOADER_SOURCE_FILES})
+target_link_libraries(${EXECUTABLE_MCUBOOT_FACTORYLOADER_NAME} nrf-sdk)
+set_target_properties(${EXECUTABLE_MCUBOOT_FACTORYLOADER_NAME} PROPERTIES OUTPUT_NAME ${EXECUTABLE_MCUBOOT_FACTORYLOADER_FILE_NAME})
+target_compile_options(${EXECUTABLE_MCUBOOT_FACTORYLOADER_NAME} PUBLIC
+    $<$<AND:$<COMPILE_LANGUAGE:C>,$<CONFIG:DEBUG>>: ${COMMON_FLAGS} -O0 -g3>
+    $<$<AND:$<COMPILE_LANGUAGE:C>,$<CONFIG:RELEASE>>: ${COMMON_FLAGS} -O3>
+    $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CONFIG:DEBUG>>: ${COMMON_FLAGS} -O0 -g3>
+    $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CONFIG:RELEASE>>: ${COMMON_FLAGS} -O3>
+    $<$<COMPILE_LANGUAGE:ASM>: -MP -MD -std=c99 -x assembler-with-cpp>
+    )
+target_include_directories(${EXECUTABLE_MCUBOOT_FACTORYLOADER_NAME} PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
+    )
+add_dependencies(${EXECUTABLE_MCUBOOT_FACTORYLOADER_NAME} ${EXECUTABLE_FACTORY_MCUBOOT_NAME})
+
+set_target_properties(${EXECUTABLE_MCUBOOT_FACTORYLOADER_NAME} PROPERTIES
+    SUFFIX ".out"
+    LINK_FLAGS "-mthumb -mabi=aapcs -std=gnu++98 -std=c99 -L ${NRF5_SDK_PATH}/modules/nrfx/mdk -T${NRF5_LINKER_SCRIPT_MCUBOOT} -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -Wl,--gc-sections --specs=nano.specs -lc -lnosys -lm -Wl,-Map=${EXECUTABLE_MCUBOOT_FACTORYLOADER_FILE_NAME}.map"
+    CXX_STANDARD 11
+    C_STANDARD 99
+    )
+
+add_custom_command(TARGET ${EXECUTABLE_MCUBOOT_FACTORYLOADER_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_SIZE_UTIL} ${EXECUTABLE_MCUBOOT_FACTORYLOADER_FILE_NAME}.out
+    COMMAND ${CMAKE_OBJCOPY} -O binary ${EXECUTABLE_MCUBOOT_FACTORYLOADER_FILE_NAME}.out "${EXECUTABLE_MCUBOOT_FACTORYLOADER_FILE_NAME}.bin"
+    COMMAND ${CMAKE_OBJCOPY} -O ihex ${EXECUTABLE_MCUBOOT_FACTORYLOADER_FILE_NAME}.out "${EXECUTABLE_MCUBOOT_FACTORYLOADER_FILE_NAME}.hex"
+    COMMAND /home/jf/nrf52/mcuboot/scripts/imgtool.py create --align 4 --version 1.0.0 --header-size 32 --slot-size 475136 --pad-header ${EXECUTABLE_MCUBOOT_FACTORYLOADER_FILE_NAME}.bin factoryLoaderImage.bin
+    COMMAND python ${CMAKE_SOURCE_DIR}/tools/bin2c.py factoryLoaderImage.bin factoryLoaderImage > factoryLoaderImage.h
+    COMMENT "post build steps for ${EXECUTABLE_MCUBOOT_FACTORYLOADER_FILE_NAME}"
+    )
+
 # FLASH
 if (USE_JLINK)
     add_custom_target(FLASH_ERASE

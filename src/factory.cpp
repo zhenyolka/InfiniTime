@@ -85,8 +85,13 @@ void SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0_IRQHandler(void) {
 }
 }
 
+void RefreshWatchdog() {
+  NRF_WDT->RR[0] = WDT_RR_RR_Reload;
+}
+
 uint8_t displayBuffer[displayWidth * bytesPerPixel];
 void Process(void* instance) {
+  RefreshWatchdog();
   APP_GPIOTE_INIT(2);
 
   NRF_LOG_INFO("Init...");
@@ -103,6 +108,7 @@ void Process(void* instance) {
   NRF_LOG_INFO("Erasing...");
   for (uint32_t erased = 0; erased < sizeof(factoryImage); erased += 0x1000) {
     spiNorFlash.SectorErase(erased);
+    RefreshWatchdog();
   }
 
   NRF_LOG_INFO("Writing factory image...");
@@ -112,6 +118,7 @@ void Process(void* instance) {
     std::memcpy(writeBuffer, &factoryImage[offset], memoryChunkSize);
     spiNorFlash.Write(offset, writeBuffer, memoryChunkSize);
     DisplayProgressBar((static_cast<float>(offset) / static_cast<float>(sizeof(factoryImage))) * 100.0f, colorWhite);
+    RefreshWatchdog();
   }
   NRF_LOG_INFO("Writing factory image done!");
   DisplayProgressBar(100.0f, colorGreen);
@@ -144,7 +151,7 @@ void DisplayProgressBar(uint8_t percent, uint16_t color) {
 
 int main(void) {
   TaskHandle_t taskHandle;
-
+  RefreshWatchdog();
   logger.Init();
   nrf_drv_clock_init();
 
