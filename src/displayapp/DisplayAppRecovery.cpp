@@ -1,5 +1,5 @@
-#include "DisplayAppFactory.h"
-#include "DisplayAppFactory.h"
+#include "DisplayAppRecovery.h"
+#include "DisplayAppRecovery.h"
 #include <FreeRTOS.h>
 #include <task.h>
 #include <libraries/log/nrf_log.h>

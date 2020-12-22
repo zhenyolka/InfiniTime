@@ -71,10 +71,10 @@ Pinetime::Drivers::TwiMaster twiMaster{Pinetime::Drivers::TwiMaster::Modules::TW
                                                MaxTwiFrequencyWithoutHardwareBug, pinTwiSda, pinTwiScl}};
 Pinetime::Drivers::Cst816S touchPanel {twiMaster, touchPanelTwiAddress};
 
-#ifdef PINETIME_IS_FACTORY
+#ifdef PINETIME_IS_RECOVERY
 static constexpr bool isFactory = true;
 #include "displayapp/DummyLittleVgl.h"
-#include "displayapp/DisplayAppFactory.h"
+#include "displayapp/DisplayAppRecovery.h"
 Pinetime::Components::LittleVgl lvgl {lcd, touchPanel};
 #else
 static constexpr bool isFactory = false;

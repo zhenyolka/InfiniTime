@@ -13,7 +13,7 @@
 #include <components/gfx/Gfx.h>
 #include <drivers/St7789.h>
 #include <components/brightness/BrightnessController.h>
-#include "factoryImage.h"
+#include "recoveryImage.h"
 
 #include "displayapp/icons/infinitime/infinitime-nb.c"
 #include "components/rle/RleDecoder.h"
@@ -106,7 +106,7 @@ void Process(void* instance) {
   DisplayLogo();
 
   NRF_LOG_INFO("Erasing...");
-  for (uint32_t erased = 0; erased < sizeof(factoryImage); erased += 0x1000) {
+  for (uint32_t erased = 0; erased < sizeof(recoveryImage); erased += 0x1000) {
     spiNorFlash.SectorErase(erased);
     RefreshWatchdog();
   }
@@ -114,10 +114,10 @@ void Process(void* instance) {
   NRF_LOG_INFO("Writing factory image...");
   static constexpr uint32_t memoryChunkSize = 200;
   uint8_t writeBuffer[memoryChunkSize];
-  for(size_t offset = 0; offset < sizeof(factoryImage); offset+=memoryChunkSize) {
-    std::memcpy(writeBuffer, &factoryImage[offset], memoryChunkSize);
+  for(size_t offset = 0; offset < sizeof(recoveryImage); offset+=memoryChunkSize) {
+    std::memcpy(writeBuffer, &recoveryImage[offset], memoryChunkSize);
     spiNorFlash.Write(offset, writeBuffer, memoryChunkSize);
-    DisplayProgressBar((static_cast<float>(offset) / static_cast<float>(sizeof(factoryImage))) * 100.0f, colorWhite);
+    DisplayProgressBar((static_cast<float>(offset) / static_cast<float>(sizeof(recoveryImage))) * 100.0f, colorWhite);
     RefreshWatchdog();
   }
   NRF_LOG_INFO("Writing factory image done!");

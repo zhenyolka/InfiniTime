@@ -7,8 +7,8 @@
 #include <drivers/SpiMaster.h>
 #include <drivers/St7789.h>
 #include "components/battery/BatteryController.h"
-#ifdef PINETIME_IS_FACTORY
-#include "displayapp/DisplayAppFactory.h"
+#ifdef PINETIME_IS_RECOVERY
+#include "displayapp/DisplayAppRecovery.h"
 #include "displayapp/DummyLittleVgl.h"
 #else
 #include "displayapp/DisplayApp.h"
