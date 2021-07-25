@@ -6,12 +6,10 @@ steps:
   - name: build
     pull: never
     image: infinitime-build
-    user: root
+    user: root #needed to have permission to the workspace volume
     environment:
       SOURCES_DIR: /drone/src
     commands:
-      - whoami
-      - ls -la
       - git submodule update --init
       - /opt/build.sh
 
