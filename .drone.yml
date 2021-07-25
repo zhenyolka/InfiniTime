@@ -2,14 +2,13 @@ kind: pipeline
 type: docker
 name: default
 
-workspace:
-  path: /tmp/drone
-
 steps:
   - name: greeting
     pull: never
     image: infinitime-build
     volumes:
+      - name: sources
+        path: /sources
       - name: dockersock
         path: /var/run
     commands:
@@ -27,3 +26,5 @@ services:
 volumes:
   - name: dockersock
     temp: {}
+  - name: sources
+    temp: { }
