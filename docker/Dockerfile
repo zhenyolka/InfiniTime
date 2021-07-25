@@ -43,5 +43,5 @@ ARG PGID=1000
 RUN groupadd --system --gid $PGID infinitime && useradd --system --uid $PUID --gid $PGID infinitime
 
 USER infinitime:infinitime
-ENV SOURCES_DIR /sources
+ENV SOURCES_DIR .
 CMD ["/opt/build.sh"]
