@@ -7,7 +7,7 @@ steps:
     pull: never
     image: infinitime-build
     volumes:
-      - name: sources
+      - name: workspace
         path: /sources
       - name: dockersock
         path: /var/run
@@ -26,6 +26,3 @@ services:
 volumes:
   - name: dockersock
     temp: {}
-  - name: sources
-    host:
-      path: /drone/src
