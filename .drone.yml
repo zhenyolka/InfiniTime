@@ -10,6 +10,9 @@ steps:
     environment:
       SOURCES_DIR: /drone/src
     commands:
+      - whoami
+      - ls -la
+      - chmod -R +rwx ./*
       - ls -la
       - git submodule update --init
       - /opt/build.sh
