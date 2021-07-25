@@ -3,25 +3,13 @@ type: docker
 name: default
 
 steps:
-  - name: greeting
+  - name: build
     pull: never
     image: infinitime-build
-    volumes:
-      - name: dockersock
-        path: /var/run
+    environment:
+      SOURCES_DIR: /drone/src
     commands:
       - ls -la
       - git submodule update --init
       - /opt/build.sh
 
-services:
-  - name: docker
-    image: infinitime-build
-    privileged: true
-    volumes:
-      - name: dockersock
-        path: /var/run
-
-volumes:
-  - name: dockersock
-    temp: {}
