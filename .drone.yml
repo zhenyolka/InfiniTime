@@ -15,8 +15,8 @@ steps:
       - name: dockersock
         path: /var/run
     commands:
-      - sleep 5 # give docker enough time to start
-      - docker ps -a
+      - sleep 10 # give docker enough time to start
+      - /opt/build.sh pinetime-app
 
 services:
   - name: docker
