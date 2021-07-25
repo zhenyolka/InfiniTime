@@ -6,6 +6,7 @@ steps:
   - name: build
     pull: never
     image: infinitime-build
+    user: root
     environment:
       SOURCES_DIR: /drone/src
     commands:
