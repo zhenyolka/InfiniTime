@@ -27,4 +27,5 @@ volumes:
   - name: dockersock
     temp: {}
   - name: sources
-    temp: { }
+    host:
+      path: /drone/src
