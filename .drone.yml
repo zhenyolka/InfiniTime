@@ -12,7 +12,7 @@ steps:
     commands:
       - ls -la
       - git submodule update --init
-      - /opt/build.sh pinetime-app
+      - /opt/build.sh
 
 services:
   - name: docker
