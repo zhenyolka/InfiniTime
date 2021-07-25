@@ -11,6 +11,7 @@ steps:
         path: /var/run
     commands:
       - ls -la
+      - git submodule update --init
       - /opt/build.sh pinetime-app
 
 services:
