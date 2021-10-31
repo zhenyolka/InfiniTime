@@ -29,15 +29,11 @@ CMake configures the project according to variables you specify the command line
 ----------|-------------|--------|
 **ARM_NONE_EABI_TOOLCHAIN_PATH**|path to the toolchain directory|`-DARM_NONE_EABI_TOOLCHAIN_PATH=/home/jf/nrf52/gcc-arm-none-eabi-9-2020-q2-update/`|
 **NRF5_SDK_PATH**|path to the NRF52 SDK|`-DNRF5_SDK_PATH=/home/jf/nrf52/Pinetime/sdk`|
-**USE_JLINK, USE_GDB_CLIENT and USE_OPENOCD**|Enable *JLink* mode, *GDB Client* (Black Magic Probe) mode or *OpenOCD* mode (set the one you want to use to `1`)|`-DUSE_JLINK=1`
 **CMAKE_BUILD_TYPE (\*)**| Build type (Release or Debug). Release is applied by default if this variable is not specified.|`-DCMAKE_BUILD_TYPE=Debug`
-**NRFJPROG**|Path to the NRFJProg executable. Used only if `USE_JLINK` is 1.|`-DNRFJPROG=/opt/nrfjprog/nrfjprog`
-**GDB_CLIENT_BIN_PATH**|Path to arm-none-eabi-gdb executable. Used only if `USE_GDB_CLIENT` is 1.|`-DGDB_CLIENT_BIN_PATH=/home/jf/nrf52/gcc-arm-none-eabi-9-2019-q4-major/bin/arm-none-eabi-gdb`
-**GDB_CLIENT_TARGET_REMOTE**|Target remote connection string. Used only if `USE_GDB_CLIENT` is 1.|`-DGDB_CLIENT_TARGET_REMOTE=/dev/ttyACM0`
 **BUILD_DFU (\*\*)**|Build DFU files while building (needs [adafruit-nrfutil](https://github.com/adafruit/Adafruit_nRF52_nrfutil)).|`-DBUILD_DFU=1`
 **WATCH_COLMI_P8**|Use pin configuration for Colmi P8 watch|`-DWATCH_COLMI_P8=1`
 
-####(**) Note about **CMAKE_BUILD_TYPE**:
+####(*) Note about **CMAKE_BUILD_TYPE**:
 By default, this variable is set to *Release*. It compiles the code with size and speed optimizations. We use this value for all the binaries we publish when we [release](https://github.com/InfiniTimeOrg/InfiniTime/releases) new versions of InfiniTime.
 
 The *Debug* mode disables all optimizations, which makes the code easier to debug. However, the binary size will likely be too big to fit in the internal flash memory. If you want to build and debug a *Debug* binary, you'll need to disable some parts of the code. For example, the icons for the **Navigation** app use a lot of memory space. You can comment the content of `m_iconMap` in the [Navigation](https://github.com/InfiniTimeOrg/InfiniTime/blob/develop/src/displayapp/screens/Navigation.h#L148) application to free some memory.
@@ -45,25 +41,13 @@ The *Debug* mode disables all optimizations, which makes the code easier to debu
 ####(**) Note about **BUILD_DFU**:
 DFU files are the files you'll need to install your build of InfiniTime using OTA (over-the-air) mecanism. To generate the DFU file, the Python tool [adafruit-nrfutil](https://github.com/adafruit/Adafruit_nRF52_nrfutil) is needed on your system. Check that this tool is properly installed before enabling this option.
 
-#### CMake command line for JLink
+#### CMake command 
 ```
-cmake -DARM_NONE_EABI_TOOLCHAIN_PATH=... -DNRF5_SDK_PATH=... -DUSE_JLINK=1 -DNRFJPROG=... ../
-```
-
-#### CMake command line for GDB Client (Black Magic Probe)
-```
-cmake -DARM_NONE_EABI_TOOLCHAIN_PATH=... -DNRF5_SDK_PATH=... -DUSE_GDB_CLIENT=1 -DGDB_CLIENT_BIN_PATH=... -DGDB_CLIENT_TARGET_REMOTE=... ../
-```
-
-#### CMake command line for OpenOCD
-```
-cmake -DARM_NONE_EABI_TOOLCHAIN_PATH=... -DNRF5_SDK_PATH=... -DUSE_OPENOCD=1 -DGDB_CLIENT_BIN_PATH=[optional] ../
+cmake -DARM_NONE_EABI_TOOLCHAIN_PATH=... -DNRF5_SDK_PATH=...
 ```
 
 ### Build the project
 During the project generation, CMake created the following targets:
-- **FLASH_ERASE** : mass erase the flash memory of the NRF52.
-- **FLASH_pinetime-app** : flash the firmware into the NRF52.
 - **pinetime-app** : build the standalone (without bootloader support) version of the firmware.
 - **pinetime-recovery** : build the standalone recovery version of infinitime (light firmware that only supports OTA and basic UI)
 - **pinetime-recovery-loader** : build the standalone tool that flashes the recovery firmware into the external SPI flash
@@ -91,20 +75,7 @@ The same files are generated for **pinetime-recovery** and **pinetime-recoverylo
 
  
 ### Program and run
-#### Using CMake targets
-These target have been configured during the project generation by CMake according to the parameters you provided to the command line.
-
-Mass erase:
-```
-make FLASH_ERASE
-``` 
-
-Flash the application:
-```
-make FLASH_pinetime-app
-```
-
-### Using JLink
+#### Using JLink
 Start JLinkExe:
 ```
 $ /opt/SEGGER/JLink/JLinkExe -device nrf52 -if swd -speed 4000 -autoconnect 1     
