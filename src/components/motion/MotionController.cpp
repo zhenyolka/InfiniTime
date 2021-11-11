@@ -14,7 +14,12 @@ void MotionController::Update(int16_t x, int16_t y, int16_t z, uint32_t nbSteps)
   lastYIndex++;
   lastYIndex %= lastYs.size();
   lastYs[lastYIndex] = y;
+
+  deltaY = y - this->y;
+  deltaZ = z - this->z;
+
   this->x = x;
+  this->y = y;
   this->z = z;
   int32_t deltaSteps = nbSteps - this->nbSteps;
   this->nbSteps = nbSteps;
@@ -23,27 +28,27 @@ void MotionController::Update(int16_t x, int16_t y, int16_t z, uint32_t nbSteps)
   }
 }
 
-bool MotionController::Should_RaiseWake(bool isSleeping) {
-  if ((x + 335) <= 670 && z < 0) {
-    if (not isSleeping) {
-      if (lastYs[lastYIndex] <= 0) {
-        return false;
-      } else {
-        lastYForWakeUp = 0;
-        return false;
-      }
-    }
+bool MotionController::ShouldRaiseWake() const {
+  if (x < -raiseWakeXThresh || x > raiseWakeXThresh || y > raiseWakeYThresh) {
+    return false;
+  }
 
-    if (lastYs[lastYIndex] >= 0) {
-      lastYForWakeUp = 0;
+  if (std::abs(y) > std::abs(z)) {
+    if (deltaZ < raiseWakeSpeed) {
       return false;
     }
-    if (lastYs[lastYIndex] + 230 < lastYForWakeUp) {
-      lastYForWakeUp = lastYs[lastYIndex];
-      return true;
-    }
+    return true;
   }
-  return false;
+  if (z < 0) {
+    if (deltaY > -raiseWakeSpeed) {
+      return false;
+    }
+    return true;
+  }
+  if (deltaY < raiseWakeSpeed) {
+    return false;
+  }
+  return true;
 }
 
 bool MotionController::Should_ShakeWake(uint16_t thresh) {
