@@ -32,7 +32,7 @@ bool Cst816S::Init() {
   twiMaster.Read(twiAddress, 0xa7, &dummy, 1);
   vTaskDelay(5);
 
-  /*
+
   static constexpr uint8_t maxRetries = 3;
   bool isDeviceOk;
   uint8_t retries = 0;
@@ -40,7 +40,7 @@ bool Cst816S::Init() {
     isDeviceOk = CheckDeviceIds();
     retries++;
   } while (!isDeviceOk && retries < maxRetries);
-
+/*
   if (!isDeviceOk) {
     return false;
   }
