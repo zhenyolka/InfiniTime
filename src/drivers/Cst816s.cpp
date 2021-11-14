@@ -32,6 +32,7 @@ bool Cst816S::Init() {
   twiMaster.Read(twiAddress, 0xa7, &dummy, 1);
   vTaskDelay(5);
 
+  /*
   static constexpr uint8_t maxRetries = 3;
   bool isDeviceOk;
   uint8_t retries = 0;
@@ -43,6 +44,7 @@ bool Cst816S::Init() {
   if (!isDeviceOk) {
     return false;
   }
+   */
 
   /*
   [2] EnConLR - Continuous operation can slide around
@@ -86,6 +88,7 @@ Cst816S::TouchInfos Cst816S::GetTouchInfo() {
   Gestures gesture = static_cast<Gestures>(touchData[gestureIndex]);
 
   // Validity check
+  /*
   if(x >= maxX || y >= maxY ||
       (gesture != Gestures::None &&
        gesture != Gestures::SlideDown &&
@@ -98,6 +101,7 @@ Cst816S::TouchInfos Cst816S::GetTouchInfo() {
     info.isValid = false;
     return info;
   }
+  */
 
   info.x = x;
   info.y = y;
