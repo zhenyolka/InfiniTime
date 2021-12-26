@@ -77,6 +77,7 @@ void DfuService::Init() {
 }
 
 int DfuService::OnServiceData(uint16_t connectionHandle, uint16_t attributeHandle, ble_gatt_access_ctxt* context) {
+  NRF_LOG_INFO("[DFU] OnServiceData(%d, %d)", connectionHandle, attributeHandle);
   if (bleController.IsFirmwareUpdating()) {
     xTimerStart(timeoutTimer, 0);
   }
@@ -107,26 +108,31 @@ int DfuService::OnServiceData(uint16_t connectionHandle, uint16_t attributeHandl
 }
 
 int DfuService::SendDfuRevision(os_mbuf* om) const {
+  NRF_LOG_INFO("[DFU] SendDFURevision");
   int res = os_mbuf_append(om, &revision, sizeof(revision));
   return (res == 0) ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
 }
 
 int DfuService::WritePacketHandler(uint16_t connectionHandle, os_mbuf* om) {
+  NRF_LOG_INFO("[DFU] WritePacketHandler(%d)", connectionHandle);
   switch (state) {
     case States::Start: {
+      NRF_LOG_INFO("\tWritePacketHandler -- START");
       softdeviceSize = om->om_data[0] + (om->om_data[1] << 8) + (om->om_data[2] << 16) + (om->om_data[3] << 24);
       bootloaderSize = om->om_data[4] + (om->om_data[5] << 8) + (om->om_data[6] << 16) + (om->om_data[7] << 24);
       applicationSize = om->om_data[8] + (om->om_data[9] << 8) + (om->om_data[10] << 16) + (om->om_data[11] << 24);
       bleController.FirmwareUpdateTotalBytes(applicationSize);
-      NRF_LOG_INFO(
-        "[DFU] -> Start data received : SD size : %d, BT size : %d, app size : %d", softdeviceSize, bootloaderSize, applicationSize);
+      NRF_LOG_INFO("[DFU] -> Start data received : SD size : %d, BT size : %d, app size : %d", softdeviceSize, bootloaderSize, applicationSize);
 
       // wait until SystemTask has finished waking up all devices
+      NRF_LOG_INFO("\tWritePacketHandler -- START - -wait sleep");
       while (systemTask.IsSleeping()) {
         vTaskDelay(50); // 50ms
       }
 
+      NRF_LOG_INFO("\tWritePacketHandler -- START - Erase");
       dfuImage.Erase();
+      NRF_LOG_INFO("\tWritePacketHandler -- START - Erase done");
 
       uint8_t data[] {16, 1, 1};
       notificationManager.Send(connectionHandle, controlPointCharacteristicHandle, data, 3);
@@ -134,6 +140,7 @@ int DfuService::WritePacketHandler(uint16_t connectionHandle, os_mbuf* om) {
     }
       return 0;
     case States::Init: {
+      NRF_LOG_INFO("\tWritePacketHandler -- INIT");
       uint16_t deviceType = om->om_data[0] + (om->om_data[1] << 8);
       uint16_t deviceRevision = om->om_data[2] + (om->om_data[3] << 8);
       uint32_t applicationVersion = om->om_data[4] + (om->om_data[5] << 8) + (om->om_data[6] << 16) + (om->om_data[7] << 24);
@@ -157,6 +164,7 @@ int DfuService::WritePacketHandler(uint16_t connectionHandle, os_mbuf* om) {
     }
 
     case States::Data: {
+      NRF_LOG_INFO("\tWritePacketHandler -- DATA");
       nbPacketReceived++;
       dfuImage.Append(om->om_data, om->om_len);
       bytesReceived += om->om_len;
@@ -189,11 +197,13 @@ int DfuService::WritePacketHandler(uint16_t connectionHandle, os_mbuf* om) {
 }
 
 int DfuService::ControlPointHandler(uint16_t connectionHandle, os_mbuf* om) {
+  NRF_LOG_INFO("[DFU] ControlPointHandler(%d)", connectionHandle);
   auto opcode = static_cast<Opcodes>(om->om_data[0]);
   NRF_LOG_INFO("[DFU] -> ControlPointHandler");
 
   switch (opcode) {
     case Opcodes::StartDFU: {
+      NRF_LOG_INFO("\tControlPointHandler -- StartDFU");
       if (state != States::Idle && state != States::Start) {
         NRF_LOG_INFO("[DFU] -> Start DFU requested, but we are not in Idle state");
         return 0;
@@ -218,6 +228,8 @@ int DfuService::ControlPointHandler(uint16_t connectionHandle, os_mbuf* om) {
       }
     } break;
     case Opcodes::InitDFUParameters: {
+      NRF_LOG_INFO("\tControlPointHandler -- InitDFUParameters");
+
       if (state != States::Init) {
         NRF_LOG_INFO("[DFU] -> Init DFU requested, but we are not in Init state");
         return 0;
@@ -235,6 +247,8 @@ int DfuService::ControlPointHandler(uint16_t connectionHandle, os_mbuf* om) {
     }
       return 0;
     case Opcodes::PacketReceiptNotificationRequest:
+      NRF_LOG_INFO("\tControlPointHandler -- PacketReceiptNotificationRequest");
+
       nbPacketsToNotify = om->om_data[1];
       NRF_LOG_INFO("[DFU] -> Receive Packet Notification Request, nb packet = %d", nbPacketsToNotify);
       return 0;
@@ -249,6 +263,8 @@ int DfuService::ControlPointHandler(uint16_t connectionHandle, os_mbuf* om) {
       state = States::Data;
       return 0;
     case Opcodes::ValidateFirmware: {
+      NRF_LOG_INFO("\tControlPointHandler -- ValidateFirmware");
+
       if (state != States::Validate) {
         NRF_LOG_INFO("[DFU] -> Validate firmware image requested, but we are not in Data state %d", state);
         return 0;
@@ -279,6 +295,8 @@ int DfuService::ControlPointHandler(uint16_t connectionHandle, os_mbuf* om) {
       return 0;
     }
     case Opcodes::ActivateImageAndReset:
+      NRF_LOG_INFO("\tControlPointHandler -- ActivateImageAndReset");
+
       if (state != States::Validated) {
         NRF_LOG_INFO("[DFU] -> Activate image and reset requested, but we are not in Validated state");
         return 0;
@@ -293,6 +311,7 @@ int DfuService::ControlPointHandler(uint16_t connectionHandle, os_mbuf* om) {
 }
 
 void DfuService::OnTimeout() {
+  NRF_LOG_INFO("[DFU] OnTimeout()");
   bleController.State(Pinetime::Controllers::Ble::FirmwareUpdateStates::Error);
   Reset();
 }

@@ -39,34 +39,34 @@ SettingSetTime::SettingSetTime(Pinetime::Applications::DisplayApp *app, Pinetime
 
   hoursValue = static_cast<int>(dateTimeController.Hours());
   lblHours = lv_label_create(lv_scr_act(), nullptr);
-  lv_obj_set_style_local_text_font(lblHours, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_42);
+  //lv_obj_set_style_local_text_font(lblHours, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_42);
   lv_label_set_text_fmt(lblHours, "%02d", hoursValue);
   lv_label_set_align(lblHours, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(lblHours, lv_scr_act(), LV_ALIGN_CENTER, POS_X_HOURS, POS_Y_TEXT);
   lv_obj_set_auto_realign(lblHours, true);
 
   lv_obj_t * lblColon1 = lv_label_create(lv_scr_act(), nullptr);
-  lv_obj_set_style_local_text_font(lblColon1, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_42);
+  //lv_obj_set_style_local_text_font(lblColon1, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_42);
   lv_label_set_text_static(lblColon1, ":");
   lv_label_set_align(lblColon1, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(lblColon1, lv_scr_act(), LV_ALIGN_CENTER, (POS_X_HOURS + POS_X_MINUTES) / 2, POS_Y_TEXT + OFS_Y_COLON);
 
   minutesValue = static_cast<int>(dateTimeController.Minutes());
   lblMinutes = lv_label_create(lv_scr_act(), nullptr);
-  lv_obj_set_style_local_text_font(lblMinutes, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_42);
+ // lv_obj_set_style_local_text_font(lblMinutes, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_42);
   lv_label_set_text_fmt(lblMinutes, "%02d", minutesValue);
   lv_label_set_align(lblMinutes, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(lblMinutes, lv_scr_act(), LV_ALIGN_CENTER, POS_X_MINUTES, POS_Y_TEXT);
   lv_obj_set_auto_realign(lblMinutes, true);
 
   lv_obj_t * lblColon2 = lv_label_create(lv_scr_act(), nullptr);
-  lv_obj_set_style_local_text_font(lblColon2, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_42);
+ // lv_obj_set_style_local_text_font(lblColon2, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_42);
   lv_label_set_text_static(lblColon2, ":");
   lv_label_set_align(lblColon2, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(lblColon2, lv_scr_act(), LV_ALIGN_CENTER, (POS_X_MINUTES + POS_X_SECONDS) / 2, POS_Y_TEXT + OFS_Y_COLON);
 
   lv_obj_t * lblSeconds = lv_label_create(lv_scr_act(), nullptr);
-  lv_obj_set_style_local_text_font(lblSeconds, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_42);
+  //lv_obj_set_style_local_text_font(lblSeconds, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_42);
   lv_label_set_text_static(lblSeconds, "00");
   lv_label_set_align(lblSeconds, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(lblSeconds, lv_scr_act(), LV_ALIGN_CENTER, POS_X_SECONDS, POS_Y_TEXT);

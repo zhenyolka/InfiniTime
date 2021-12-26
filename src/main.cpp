@@ -57,6 +57,10 @@ Pinetime::Logging::NrfLogger logger;
 Pinetime::Logging::DummyLogger logger;
 #endif
 
+extern "C" {
+#include "McuASAN.h"
+}
+
 static constexpr uint8_t touchPanelTwiAddress = 0x15;
 static constexpr uint8_t motionSensorTwiAddress = 0x18;
 static constexpr uint8_t heartRateSensorTwiAddress = 0x44;
@@ -301,6 +305,9 @@ void nimble_port_ll_task_func(void* args) {
 
 int main(void) {
   logger.Init();
+  McuASAN_Init();
+
+  auto* toto = malloc(9);
 
   nrf_drv_clock_init();
 

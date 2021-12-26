@@ -110,15 +110,28 @@ void MotionService::OnNewMotionValues(int16_t x, int16_t y, int16_t z) {
 }
 
 void MotionService::SubscribeNotification(uint16_t connectionHandle, uint16_t attributeHandle) {
-  if(attributeHandle == stepCountHandle)
+  /*
+  if(attributeHandle == stepCountHandle) {
     stepCountNoficationEnabled = true;
-  else if(attributeHandle == motionValuesHandle)
+    NRF_LOG_INFO("ENABLE STEP NOTIFICATION");
+  }
+  else if(attributeHandle == motionValuesHandle) {
     motionValuesNoficationEnabled = true;
+    NRF_LOG_INFO("ENABLE MOTION NOTIFICATION");
+  }
+   */
 }
 
 void MotionService::UnsubscribeNotification(uint16_t connectionHandle, uint16_t attributeHandle) {
-  if(attributeHandle == stepCountHandle)
+  /*
+  if(attributeHandle == stepCountHandle) {
     stepCountNoficationEnabled = false;
-  else if(attributeHandle == motionValuesHandle)
+    NRF_LOG_INFO("DISABLE STEP NOTIFICATION");
+  }
+  else if(attributeHandle == motionValuesHandle) {
+    NRF_LOG_INFO("DISABLE MOTION NOTIFICATION");
+
     motionValuesNoficationEnabled = false;
+  }
+   */
 }

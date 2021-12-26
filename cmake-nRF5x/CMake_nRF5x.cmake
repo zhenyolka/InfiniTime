@@ -64,7 +64,7 @@ macro(nRF5x_setup)
         set(CPU_FLAGS "-mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16")
         add_definitions(-DNRF52 -DNRF52832 -DNRF52832_XXAA -DNRF52_PAN_74 -DNRF52_PAN_64 -DNRF52_PAN_12 -DNRF52_PAN_58 -DNRF52_PAN_54 -DNRF52_PAN_31 -DNRF52_PAN_51 -DNRF52_PAN_36 -DNRF52_PAN_15 -DNRF52_PAN_20 -DNRF52_PAN_55 -DBOARD_PCA10040)
         add_definitions(-DFREERTOS)
-        add_definitions(-DDEBUG_NRF_USER)
+        #add_definitions(-DDEBUG_NRF_USER)
         include_directories(
           "${NRF5_SDK_PATH}/components/drivers_nrf/nrf_soc_nosd"
         )

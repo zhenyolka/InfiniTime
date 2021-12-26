@@ -132,7 +132,7 @@ Navigation::Navigation(Pinetime::Applications::DisplayApp* app, Pinetime::Contro
   : Screen(app), navService(nav) {
 
   imgFlag = lv_label_create(lv_scr_act(), nullptr);
-  lv_obj_set_style_local_text_font(imgFlag, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &lv_font_navi_80);
+  //lv_obj_set_style_local_text_font(imgFlag, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &lv_font_navi_80);
   lv_obj_set_style_local_text_color(imgFlag, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_CYAN);
   lv_label_set_text(imgFlag, iconForName("flag"));
   lv_obj_align(imgFlag, nullptr, LV_ALIGN_CENTER, 0, -60);

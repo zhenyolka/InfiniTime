@@ -291,10 +291,10 @@ set(LVGL_SRC
         libs/lvgl/src/lv_font/lv_font_fmt_txt.c
         libs/lvgl/src/lv_font/lv_font_loader.c
         # LVGL Fonts
-        libs/lvgl/src/lv_font/lv_font_montserrat_14.c
-        libs/lvgl/src/lv_font/lv_font_montserrat_18.c
-        libs/lvgl/src/lv_font/lv_font_montserrat_22.c
-        libs/lvgl/src/lv_font/lv_font_montserrat_28.c
+        #libs/lvgl/src/lv_font/lv_font_montserrat_14.c
+        #libs/lvgl/src/lv_font/lv_font_montserrat_18.c
+        #libs/lvgl/src/lv_font/lv_font_montserrat_22.c
+        #libs/lvgl/src/lv_font/lv_font_montserrat_28.c
         #
         libs/lvgl/src/lv_hal/lv_hal_disp.c
         libs/lvgl/src/lv_hal/lv_hal_indev.c
@@ -485,7 +485,7 @@ list(APPEND SOURCE_FILES
         components/ble/MusicService.cpp
         components/ble/weather/WeatherService.cpp
         components/ble/NavigationService.cpp
-        displayapp/fonts/lv_font_navi_80.c
+        #displayapp/fonts/lv_font_navi_80.c
         components/ble/BatteryInformationService.cpp
         components/ble/FSService.cpp
         components/ble/ImmediateAlertService.cpp
@@ -504,12 +504,12 @@ list(APPEND SOURCE_FILES
         FreeRTOS/port_cmsis.c
 
         displayapp/LittleVgl.cpp
-        displayapp/fonts/jetbrains_mono_extrabold_compressed.c
+        #displayapp/fonts/jetbrains_mono_extrabold_compressed.c
         displayapp/fonts/jetbrains_mono_bold_20.c
-        displayapp/fonts/jetbrains_mono_76.c
-        displayapp/fonts/jetbrains_mono_42.c
-        displayapp/fonts/lv_font_sys_48.c
-        displayapp/fonts/open_sans_light.c
+        #displayapp/fonts/jetbrains_mono_76.c
+        #displayapp/fonts/jetbrains_mono_42.c
+        #displayapp/fonts/lv_font_sys_48.c
+        #displayapp/fonts/open_sans_light.c
         displayapp/lv_pinetime_theme.c
 
         systemtask/SystemTask.cpp
@@ -523,6 +523,10 @@ list(APPEND SOURCE_FILES
 
         buttonhandler/ButtonHandler.cpp
         touchhandler/TouchHandler.cpp
+
+    mcuasan/McuASAN.c
+    mcuasan/McuASAN.h
+    mcuasan/McuASANConfig.h
         )
 
 list(APPEND RECOVERY_SOURCE_FILES
@@ -712,6 +716,7 @@ include_directories(
         .
         ../
         libs/
+    mcuasan/
         FreeRTOS/
         libs/date/includes
         libs/mynewt-nimble/porting/npl/freertos/include
@@ -803,7 +808,7 @@ link_directories(
 )
 
 
-set(COMMON_FLAGS -MP -MD -mthumb -mabi=aapcs -Wall -Wextra -Warray-bounds=2 -Wformat=2 -Wformat-overflow=2 -Wformat-truncation=2 -Wformat-nonliteral -ftree-vrp -Wno-unused-parameter -Wno-missing-field-initializers -Wno-unknown-pragmas -Wno-expansion-to-defined -g3 -ffunction-sections -fdata-sections -fno-strict-aliasing -fno-builtin --short-enums -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -Wreturn-type -Werror=return-type -fstack-usage -fno-exceptions -fno-non-call-exceptions)
+set(COMMON_FLAGS -MP -MD -mthumb -mabi=aapcs -Wall -Wextra -Warray-bounds=2 -Wformat=2 -Wformat-overflow=2 -Wformat-truncation=2 -Wformat-nonliteral -ftree-vrp -Wno-unused-parameter -Wno-missing-field-initializers -Wno-unknown-pragmas -Wno-expansion-to-defined -g3 -ffunction-sections -fdata-sections -fno-strict-aliasing -fno-builtin --short-enums -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -Wreturn-type -Werror=return-type -fstack-usage -fno-exceptions -fno-non-call-exceptions -static-libasan)
 add_definitions(-DCONFIG_GPIO_AS_PINRESET)
 add_definitions(-DNIMBLE_CFG_CONTROLLER)
 add_definitions(-DOS_CPUTIME_FREQ)
@@ -891,7 +896,9 @@ target_compile_options(littlefs PRIVATE
 set(EXECUTABLE_NAME "pinetime-app")
 set(EXECUTABLE_FILE_NAME ${EXECUTABLE_NAME}-${pinetime_VERSION_MAJOR}.${pinetime_VERSION_MINOR}.${pinetime_VERSION_PATCH})
 set(NRF5_LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/gcc_nrf52.ld")
-add_executable(${EXECUTABLE_NAME} ${SOURCE_FILES})
+
+add_executable(${EXECUTABLE_NAME} ${INCLUDE_FILES} ${SOURCE_FILES})
+#target_compile_definitions(${EXECUTABLE_NAME} PUBLIC "DEBUG_NRF_USER")
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES OUTPUT_NAME ${EXECUTABLE_FILE_NAME})
 target_link_libraries(${EXECUTABLE_NAME} nimble nrf-sdk lvgl littlefs QCBOR)
 target_compile_options(${EXECUTABLE_NAME} PUBLIC
@@ -904,7 +911,7 @@ target_compile_options(${EXECUTABLE_NAME} PUBLIC
 
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES
         SUFFIX ".out"
-        LINK_FLAGS "-mthumb -mabi=aapcs -L ${NRF5_SDK_PATH}/modules/nrfx/mdk -T${NRF5_LINKER_SCRIPT} -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -Wl,--gc-sections -Wl,--print-memory-usage --specs=nano.specs -lc -lnosys -lm -Wl,-Map=${EXECUTABLE_FILE_NAME}.map"
+        LINK_FLAGS "-mthumb -mabi=aapcs -L ${NRF5_SDK_PATH}/modules/nrfx/mdk -T${NRF5_LINKER_SCRIPT} -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -Wl,--gc-sections -Wl,--print-memory-usage --specs=nano.specs -lc -lnosys -lm -Wl,-Map=${EXECUTABLE_FILE_NAME}.map -static-libasan -fsanitize=kernel-address"
         )
 
 add_custom_command(TARGET ${EXECUTABLE_NAME}

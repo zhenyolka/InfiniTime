@@ -13,8 +13,8 @@ void HeartRateTask::Start() {
   messageQueue = xQueueCreate(10, 1);
   controller.SetHeartRateTask(this);
 
-  if (pdPASS != xTaskCreate(HeartRateTask::Process, "Heartrate", 500, this, 0, &taskHandle))
-    APP_ERROR_HANDLER(NRF_ERROR_NO_MEM);
+  //if (pdPASS != xTaskCreate(HeartRateTask::Process, "Heartrate", 500, this, 0, &taskHandle))
+  //  APP_ERROR_HANDLER(NRF_ERROR_NO_MEM);
 }
 
 void HeartRateTask::Process(void* instance) {

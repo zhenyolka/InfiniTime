@@ -43,7 +43,7 @@ SettingSteps::SettingSteps(
   lv_obj_align(icon, title, LV_ALIGN_OUT_LEFT_MID, -10, 0);
 
   stepValue = lv_label_create(lv_scr_act(), nullptr);
-  lv_obj_set_style_local_text_font(stepValue, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_42);
+  //v_obj_set_style_local_text_font(stepValue, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &jetbrains_mono_42);
   lv_label_set_text_fmt(stepValue, "%lu", settingsController.GetStepsGoal());
   lv_label_set_align(stepValue, LV_LABEL_ALIGN_CENTER);
   lv_obj_align(stepValue, lv_scr_act(), LV_ALIGN_CENTER, 0, -10);

@@ -465,7 +465,7 @@ void SystemTask::UpdateMotion() {
     motionSensor.ResetStepCounter();
     stepCounterMustBeReset = false;
   }
-
+/*
   auto motionValues = motionSensor.Process();
 
   motionController.IsSensorOk(motionSensor.IsOk());
@@ -473,6 +473,7 @@ void SystemTask::UpdateMotion() {
   if (motionController.ShouldWakeUp(isSleeping)) {
     GoToRunning();
   }
+  */
 }
 
 void SystemTask::HandleButtonAction(Controllers::ButtonActions action) {
