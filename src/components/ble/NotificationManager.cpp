@@ -1,81 +1,86 @@
 #include "components/ble/NotificationManager.h"
 #include <cstring>
 #include <algorithm>
+#include <cassert>
 
 using namespace Pinetime::Controllers;
 
 constexpr uint8_t NotificationManager::MessageSize;
 
 void NotificationManager::Push(NotificationManager::Notification&& notif) {
-  notif.id = GetNextId();
   notif.valid = true;
-  notifications[writeIndex] = std::move(notif);
-  writeIndex = (writeIndex + 1 < TotalNbNotifications) ? writeIndex + 1 : 0;
-  if (!empty)
-    readIndex = (readIndex + 1 < TotalNbNotifications) ? readIndex + 1 : 0;
-  else
-    empty = false;
-
   newNotification = true;
+  if (begin_idx > 0) {
+    --begin_idx;
+  } else {
+    begin_idx = notifications.size() - 1;
+  }
+  notifications[begin_idx] = std::move(notif);
+  if (size_ < notifications.size()) {
+    size_++;
+  }
 }
 
 NotificationManager::Notification NotificationManager::GetLastNotification() {
-  NotificationManager::Notification notification = notifications[readIndex];
-  notification.index = 1;
-  return notification;
-}
-
-NotificationManager::Notification::Id NotificationManager::GetNextId() {
-  return nextId++;
-}
-
-NotificationManager::Notification NotificationManager::GetNext(NotificationManager::Notification::Id id) {
-  auto currentIterator = std::find_if(notifications.begin(), notifications.end(), [id](const Notification& n) {
-    return n.valid && n.id == id;
-  });
-  if (currentIterator == notifications.end() || currentIterator->id != id)
-    return Notification {};
-
-  auto& lastNotification = notifications[readIndex];
-
-  NotificationManager::Notification result;
-
-  if (currentIterator == (notifications.end() - 1))
-    result = *(notifications.begin());
-  else
-    result = *(currentIterator + 1);
-
-  if (result.id <= id)
+  if (this->IsEmpty()) {
     return {};
-
-  result.index = (lastNotification.id - result.id) + 1;
-  return result;
+  }
+  return this->At(0);
 }
 
-NotificationManager::Notification NotificationManager::GetPrevious(NotificationManager::Notification::Id id) {
-  auto currentIterator = std::find_if(notifications.begin(), notifications.end(), [id](const Notification& n) {
-    return n.valid && n.id == id;
-  });
-  if (currentIterator == notifications.end() || currentIterator->id != id)
-    return Notification {};
+const NotificationManager::Notification& NotificationManager::At(NotificationManager::Notification::Id idx) const {
+  if (idx >= notifications.size()) {
+    assert(false);
+    return notifications.at(begin_idx); // this should not happen
+  }
+  size_t read_idx = (begin_idx + idx) % notifications.size();
+  return notifications.at(read_idx);
+}
 
-  auto& lastNotification = notifications[readIndex];
+NotificationManager::Notification& NotificationManager::At(NotificationManager::Notification::Id idx) {
+  if (idx >= notifications.size()) {
+    assert(false);
+    return notifications.at(begin_idx); // this should not happen
+  }
+  size_t read_idx = (begin_idx + idx) % notifications.size();
+  return notifications.at(read_idx);
+}
 
-  NotificationManager::Notification result;
-
-  if (currentIterator == notifications.begin())
-    result = *(notifications.end() - 1);
-  else
-    result = *(currentIterator - 1);
-
-  if (result.id >= id)
+NotificationManager::Notification NotificationManager::GetNext(NotificationManager::Notification::Id idx) const {
+  if (idx == 0 || idx > notifications.size()) {
     return {};
-
-  result.index = (lastNotification.id - result.id) + 1;
-  return result;
+  }
+  return this->At(idx - 1);
 }
 
-bool NotificationManager::AreNewNotificationsAvailable() {
+NotificationManager::Notification NotificationManager::GetPrevious(NotificationManager::Notification::Id idx) const {
+  if (static_cast<size_t>(idx + 1) >= notifications.size()) {
+    return {};
+  }
+  return this->At(idx + 1);
+}
+
+void NotificationManager::Dismiss(NotificationManager::Notification::Id idx) {
+  if (this->IsEmpty())
+    return;
+  if (idx >= size_) {
+    assert(false);
+    return; // this should not happen
+  }
+  if (idx == 0) { // just remove the first element, don't need to change the other elements
+    notifications.at(begin_idx).valid = false;
+    begin_idx = (begin_idx + 1) % notifications.size();
+  } else {
+    // overwrite the specified entry by moving all later messages one index to the front
+    for (size_t i = idx; i < size_ - 1; ++i) {
+      this->At(i) = this->At(i + 1);
+    }
+    this->At(size_ - 1).valid = false;
+  }
+  --size_;
+}
+
+bool NotificationManager::AreNewNotificationsAvailable() const {
   return newNotification;
 }
 
@@ -84,9 +89,7 @@ bool NotificationManager::ClearNewNotificationFlag() {
 }
 
 size_t NotificationManager::NbNotifications() const {
-  return std::count_if(notifications.begin(), notifications.end(), [](const Notification& n) {
-    return n.valid;
-  });
+  return size_;
 }
 
 const char* NotificationManager::Notification::Message() const {
