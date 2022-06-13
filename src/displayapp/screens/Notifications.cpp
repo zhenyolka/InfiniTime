@@ -93,7 +93,11 @@ void Notifications::Refresh() {
     }
 
     currentItem.reset(nullptr);
-    app->SetFullRefresh(DisplayApp::FullRefreshDirections::Up);
+    if (afterDismissNextMessageFromAbove) {
+      app->SetFullRefresh(DisplayApp::FullRefreshDirections::Down);
+    } else {
+      app->SetFullRefresh(DisplayApp::FullRefreshDirections::Up);
+    }
 
     if (validDisplay) {
       currentItem = std::make_unique<NotificationItem>(notification.Title(),
@@ -139,6 +143,9 @@ bool Notifications::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
         if (currentId > 0 && currentId == notificationManager.NbNotifications()) {
           // dismissed last message (like 5/5), need to go one message down (like 4/4)
           --currentId;
+          afterDismissNextMessageFromAbove = false; // show next message coming from below
+        } else {
+          afterDismissNextMessageFromAbove = true; // show next message coming from above
         }
         currentItem->AnimateDismiss();
         return true;
