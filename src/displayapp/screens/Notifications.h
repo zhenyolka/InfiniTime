@@ -50,7 +50,8 @@ namespace Pinetime {
           }
           void OnCallButtonEvent(lv_obj_t*, lv_event_t event);
           void AnimateDismiss();
-          bool AnimationElapsed();
+          bool AnimationElapsed() const;
+          void AnimationReset();
 
         private:
           lv_obj_t* container;

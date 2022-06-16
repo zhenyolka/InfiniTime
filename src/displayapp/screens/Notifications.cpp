@@ -82,6 +82,7 @@ void Notifications::Refresh() {
   }
 
   if (currentItem != nullptr && currentItem->AnimationElapsed()) {
+    currentItem->AnimationReset();
     auto notification = notificationManager.At(currentId);
     if (!notification.valid) {
       notification = notificationManager.GetLastNotification();
@@ -364,13 +365,13 @@ void Notifications::NotificationItem::AnimateDismiss() {
   lv_anim_start(&dismissAnim);
 }
 
-bool Notifications::NotificationItem::AnimationElapsed() {
+bool Notifications::NotificationItem::AnimationElapsed() const {
   bool elapsed = dismissAnimTickCount != 0 && xTaskGetTickCount() > dismissAnimTickCount + dismissAnimLength;
-
-  if (elapsed)
-    dismissAnimTickCount = 0;
-
   return elapsed;
+}
+
+void Notifications::NotificationItem::AnimationReset() {
+  dismissAnimTickCount = 0;
 }
 
 Notifications::NotificationItem::~NotificationItem() {
