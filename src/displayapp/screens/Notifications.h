@@ -66,7 +66,7 @@ namespace Pinetime {
           Pinetime::Controllers::MotorController& motorController;
 
           lv_anim_t dismissAnim;
-          TickType_t dismissAnimTickCount;
+          TickType_t dismissAnimTickCount = 0;
           static const TickType_t dismissAnimLength = pdMS_TO_TICKS(300);
 
           bool running = true;
