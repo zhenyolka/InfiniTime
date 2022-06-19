@@ -194,8 +194,9 @@ bool Notifications::OnTouchEvent(Pinetime::Applications::TouchEvents event) {
       }
 
       validDisplay = true;
-      if (currentId > 0)
+      if (currentId > 0) {
         --currentId;
+      }
       currentItem.reset(nullptr);
       app->SetFullRefresh(DisplayApp::FullRefreshDirections::Up);
       currentItem = std::make_unique<NotificationItem>(nextNotification.Title(),

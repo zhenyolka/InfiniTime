@@ -61,8 +61,9 @@ NotificationManager::Notification NotificationManager::GetPrevious(NotificationM
 }
 
 void NotificationManager::Dismiss(NotificationManager::Notification::Id idx) {
-  if (this->IsEmpty())
+  if (this->IsEmpty()) {
     return;
+  }
   if (idx >= size_) {
     assert(false);
     return; // this should not happen
