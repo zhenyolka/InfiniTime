@@ -20,6 +20,7 @@ namespace Pinetime {
         struct Applications {
           const char* icon;
           Pinetime::Applications::Apps application;
+          const char* name;
         };
 
         explicit Tile(uint8_t screenID,
@@ -28,12 +29,12 @@ namespace Pinetime {
                       Controllers::Settings& settingsController,
                       Pinetime::Controllers::Battery& batteryController,
                       Controllers::DateTime& dateTimeController,
-                      std::array<Applications, 6>& applications);
+                      std::array<Applications, 4>& applications);
 
         ~Tile() override;
 
         void UpdateScreen();
-        void OnValueChangedEvent(lv_obj_t* obj, uint32_t buttonId);
+        void OnObjectEvent(lv_obj_t* obj);
 
       private:
         Pinetime::Controllers::Battery& batteryController;
@@ -48,8 +49,10 @@ namespace Pinetime {
 
         BatteryIcon batteryIcon;
 
-        const char* btnmMap[8];
-        Pinetime::Applications::Apps apps[6];
+        Pinetime::Applications::Apps apps[4];
+
+        lv_obj_t * iconsApps[4];
+        lv_obj_t * iconsAppsLabel[4];
       };
     }
   }

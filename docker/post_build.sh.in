@@ -21,4 +21,6 @@ cp $BUILD_DIR/src/*.hex "$OUTPUT_DIR/src/"
 cp $BUILD_DIR/src/*.out "$OUTPUT_DIR/src/"
 cp $BUILD_DIR/src/*.map "$OUTPUT_DIR/src/"
 
+"$SOURCES_DIR"/build/convert.sh
+
 ls -RUv1 "$OUTPUT_DIR" | sed 's;^\([^/]\); \1;g'

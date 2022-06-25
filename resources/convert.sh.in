@@ -1,0 +1,52 @@
+#!/bin/sh
+export LC_ALL=C.UTF-8
+export LANG=C.UTF-8
+set -e
+set +x
+
+echo "\nConvert resources Images to LVGL .BIN files\n"
+
+PROJECT_VERSION="@PROJECT_VERSION_MAJOR@.@PROJECT_VERSION_MINOR@.@PROJECT_VERSION_PATCH@"
+
+# output dir
+mkdir -p "$BUILD_DIR"/output/src
+mkdir -p "$BUILD_DIR"/src/resources
+
+rm -rf "$BUILD_DIR"/src/resources/*
+rm -rf "$BUILD_DIR"/output/*.res
+
+## resources version
+#echo "00 @PROJECT_VERSION_MAJOR@ @PROJECT_VERSION_MINOR@ @PROJECT_VERSION_PATCH@ FF" | xxd -r -p > ."$BUILD_DIR"/src/resources/resources.dat
+
+## true_color
+## images folder
+## folder structure must be the same as the one that will be created in flash
+FILESTC="$SOURCES_DIR"/resources/resourcesfiles/
+
+walk_dir () {
+    for _pathname in "$1"/*; do
+        if [ -d "$_pathname" ]; then
+            walk_dir "$_pathname"
+        elif [ -e "$_pathname" ]; then
+            case "$_pathname" in
+                *.png)                    
+                    _filename=$(echo "$_pathname" | sed "s|$FILESTC||g")
+                    _filename=$(echo "$_filename" | sed "s|.png||g")
+                    dir=$(dirname "$_filename")
+                    _filename=$(echo "$_filename" | sed "s|$dir/||g")
+                    echo "Converting $dir ==> $_filename"
+                    mkdir -p "$BUILD_DIR"/src/resources"$dir"
+                    php "$SOURCES_DIR"/resources/utils/img_conv_core.php "name=$BUILD_DIR/src/resources/$dir/$_filename&img=$_pathname&format=bin_565_swap&cf=true_color"
+            esac
+        fi
+    done
+}
+
+walk_dir "$FILESTC"
+
+## create .res file
+echo
+echo "Creating resources file ( resources-$PROJECT_VERSION.res )"
+cd "$BUILD_DIR"/src/resources
+zip -r -0 $OUTPUT_DIR/resources-$PROJECT_VERSION.res *
+cd -

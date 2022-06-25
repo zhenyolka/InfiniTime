@@ -31,25 +31,26 @@ namespace Pinetime {
         Pinetime::Controllers::Battery& batteryController;
         Controllers::DateTime& dateTimeController;
 
-        static constexpr int appsPerScreen = 6;
+        static constexpr int appsPerScreen = 4;
 
         // Increment this when more space is needed
-        static constexpr int nScreens = 2;
+        static constexpr int nScreens = 3;
 
         static constexpr std::array<Tile::Applications, appsPerScreen * nScreens> applications {{
-          {Symbols::stopWatch, Apps::StopWatch},
-          {Symbols::clock, Apps::Alarm},
-          {Symbols::hourGlass, Apps::Timer},
-          {Symbols::shoe, Apps::Steps},
-          {Symbols::heartBeat, Apps::HeartRate},
-          {Symbols::music, Apps::Music},
+          {"F:/res/icon_apps/time-management.bin",    Apps::StopWatch,  "Stop Watch"},
+          {"F:/res/icon_apps/music.bin",      Apps::Music,      "Music"},
+          {"F:/res/icon_apps/sand-clock.bin",     Apps::Timer,      "Timer"},
+          {"F:/res/icon_apps/footprint.bin",  Apps::Steps,      "Steps"},
 
-          {Symbols::paintbrush, Apps::Paint},
-          {Symbols::paddle, Apps::Paddle},
-          {"2", Apps::Twos},
-          {Symbols::chartLine, Apps::Motion},
-          {Symbols::drum, Apps::Metronome},
-          {Symbols::map, Apps::Navigation},
+          {"F:/res/icon_apps/heart.bin",          Apps::HeartRate,  "Heart Rate"},
+          {"F:/res/icon_apps/map.bin",        Apps::Navigation, "Navigation"},
+          {"F:/res/icon_apps/paint-palette.bin",  Apps::Paint,      "Paint"},
+          {"F:/res/icon_apps/ping-pong.bin",      Apps::Paddle,     "Paddle"},
+
+          {"F:/res/icon_apps/pastime.bin",          Apps::Twos,       "2048"},
+          {"F:/res/icon_apps/line-chart.bin",       Apps::Motion,     "Motion"},
+          {"F:/res/icon_apps/metronome.bin",        Apps::Metronome,  "Metronome"},
+          {"F:/res/icon_apps/alarm-clock.bin",      Apps::Alarm,      "Alarm"},
         }};
         ScreenList<nScreens> screens;
       };

@@ -15,6 +15,11 @@ RUN apt-get update -qq \
       tar \
       unzip \
       wget \
+      zip \
+      php-cli \
+      php-gd \
+      xxd \
+      ninja-build \
       curl \
       # aarch64 packages
       libffi-dev \
