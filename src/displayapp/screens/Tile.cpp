@@ -56,8 +56,8 @@ Tile::Tile(uint8_t screenID,
 
       iconsAppsLabel[i] = lv_label_create(lv_scr_act(), NULL);
       //lv_label_set_long_mode(iconsAppsLabel[i], LV_LABEL_LONG_SROLL);
-      lv_label_set_long_mode(iconsAppsLabel[i], LV_LABEL_LONG_CROP);
-      lv_obj_set_width(iconsAppsLabel[i], 115);
+      lv_label_set_long_mode(iconsAppsLabel[i], LV_LABEL_LONG_SROLL);
+      lv_obj_set_width(iconsAppsLabel[i], 100);
       lv_label_set_text(iconsAppsLabel[i], applications[i].name);
       lv_label_set_align(iconsAppsLabel[i], LV_LABEL_ALIGN_CENTER );
       lv_obj_align(iconsAppsLabel[i], iconsApps[i], LV_ALIGN_IN_BOTTOM_MID, 0, 25);
