@@ -34,7 +34,7 @@ namespace Pinetime {
         static constexpr int appsPerScreen = 4;
 
         // Increment this when more space is needed
-        static constexpr int nScreens = 3;
+        static constexpr int nScreens = 4;
 
         static constexpr std::array<Tile::Applications, appsPerScreen * nScreens> applications {{
           {"F:/res/icon_apps/time-management.bin",    Apps::StopWatch,  "Stop Watch"},
@@ -44,13 +44,15 @@ namespace Pinetime {
 
           {"F:/res/icon_apps/heart.bin",          Apps::HeartRate,  "Heart Rate"},
           {"F:/res/icon_apps/map.bin",        Apps::Navigation, "Navigation"},
+          {"F:/res/icon_apps/calendar.bin",       Apps::Calendar,     "Calendar"},
           {"F:/res/icon_apps/paint-palette.bin",  Apps::Paint,      "Paint"},
-          {"F:/res/icon_apps/ping-pong.bin",      Apps::Paddle,     "Paddle"},
 
-          {"F:/res/icon_apps/pastime.bin",          Apps::Twos,       "2048"},
+          {"F:/res/icon_apps/ping-pong.bin",      Apps::Paddle,     "Paddle"},
           {"F:/res/icon_apps/line-chart.bin",       Apps::Motion,     "Motion"},
           {"F:/res/icon_apps/metronome.bin",        Apps::Metronome,  "Metronome"},
           {"F:/res/icon_apps/alarm-clock.bin",      Apps::Alarm,      "Alarm"},
+
+          {"F:/res/icon_apps/pastime.bin",          Apps::Twos,       "2048"},
         }};
         ScreenList<nScreens> screens;
       };
