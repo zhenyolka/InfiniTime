@@ -61,6 +61,7 @@ Calendar::Calendar(DisplayApp* app, Pinetime::Controllers::Battery& batteryContr
 }
 
 Calendar::~Calendar() {
+    lv_task_del(taskRefresh);
     lv_obj_clean(lv_scr_act());
 }
 
